@@ -1,0 +1,370 @@
+/* Google Fonts - All theme font options */
+@import url('https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,100..900;1,100..900&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400..700;1,400..700&family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap');
+
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/* ============================================
+   THEME: SAGE GARDEN (Original)
+   Warm cream with sage green accents
+   ============================================ */
+[data-palette="sage"] {
+  --font-heading: 'Fraunces', serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+
+[data-palette="sage"][data-mode="day"] {
+  --color-background: #FDF8F3;
+  --color-surface: #F5EDE4;
+  --color-surface-hover: #EFE5D9;
+  --color-primary: #6A8B70;
+  --color-primary-hover: #5A7A60;
+  --color-accent: #C4908A;
+  --color-accent-hover: #B48078;
+  --color-text: #3E2E22;
+  --color-text-muted: #7A6B5E;
+  --color-border: #DDD2C5;
+  --color-shadow: rgba(74, 55, 40, 0.08);
+  --color-shadow-lg: rgba(74, 55, 40, 0.12);
+}
+
+[data-palette="sage"][data-mode="night"] {
+  --color-background: #1E1915;
+  --color-surface: #2A2320;
+  --color-surface-hover: #352E2A;
+  --color-primary: #8FA98F;
+  --color-primary-hover: #9FB99F;
+  --color-accent: #C4907A;
+  --color-accent-hover: #D4A08A;
+  --color-text: #F5EDE4;
+  --color-text-muted: #908580;
+  --color-border: #4A423C;
+  --color-shadow: rgba(0, 0, 0, 0.25);
+  --color-shadow-lg: rgba(0, 0, 0, 0.35);
+}
+
+/* ============================================
+   THEME: JAPANESE KISSATEN
+   Retro coffee house, warm sienna
+   ============================================ */
+[data-palette="kissaten"] {
+  --font-heading: 'Cormorant Garamond', serif;
+  --font-body: 'Source Sans 3', sans-serif;
+}
+
+[data-palette="kissaten"][data-mode="day"] {
+  --color-background: #F7F3EE;
+  --color-surface: #EDE6DB;
+  --color-surface-hover: #E3D9CA;
+  --color-primary: #7A4D32;
+  --color-primary-hover: #6A3F28;
+  --color-accent: #5A6A5A;
+  --color-accent-hover: #4A5A4A;
+  --color-text: #2C241D;
+  --color-text-muted: #6A5D54;
+  --color-border: #D0C7B8;
+  --color-shadow: rgba(44, 36, 29, 0.08);
+  --color-shadow-lg: rgba(44, 36, 29, 0.14);
+}
+
+[data-palette="kissaten"][data-mode="night"] {
+  --color-background: #1A1614;
+  --color-surface: #252019;
+  --color-surface-hover: #302921;
+  --color-primary: #C4956A;
+  --color-primary-hover: #D4A57A;
+  --color-accent: #8A9A8A;
+  --color-accent-hover: #9AAA9A;
+  --color-text: #E8E0D4;
+  --color-text-muted: #9A8D80;
+  --color-border: #4A4038;
+  --color-shadow: rgba(0, 0, 0, 0.25);
+  --color-shadow-lg: rgba(0, 0, 0, 0.35);
+}
+
+/* ============================================
+   THEME: COPENHAGEN HYGGE
+   Scandinavian minimalism, burnt orange
+   ============================================ */
+[data-palette="hygge"] {
+  --font-heading: 'Bitter', serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+[data-palette="hygge"][data-mode="day"] {
+  --color-background: #FAFAF8;
+  --color-surface: #F0EDE8;
+  --color-surface-hover: #E6E2DB;
+  --color-primary: #5A5550;
+  --color-primary-hover: #4A4540;
+  --color-accent: #A34808;
+  --color-accent-hover: #923D06;
+  --color-text: #1C1917;
+  --color-text-muted: #666360;
+  --color-border: #D8D5D2;
+  --color-shadow: rgba(28, 25, 23, 0.06);
+  --color-shadow-lg: rgba(28, 25, 23, 0.10);
+}
+
+[data-palette="hygge"][data-mode="night"] {
+  --color-background: #18181B;
+  --color-surface: #27272A;
+  --color-surface-hover: #323235;
+  --color-primary: #A8A29E;
+  --color-primary-hover: #B8B2AE;
+  --color-accent: #F59E0B;
+  --color-accent-hover: #FBBF24;
+  --color-text: #FAFAF9;
+  --color-text-muted: #8A8A92;
+  --color-border: #4A4A52;
+  --color-shadow: rgba(0, 0, 0, 0.3);
+  --color-shadow-lg: rgba(0, 0, 0, 0.4);
+}
+
+/* ============================================
+   THEME: PARISIAN SALON
+   French elegance, terracotta & forest
+   ============================================ */
+[data-palette="parisian"] {
+  --font-heading: 'Playfair Display', serif;
+  --font-body: 'Lora', serif;
+}
+
+[data-palette="parisian"][data-mode="day"] {
+  --color-background: #FAF7F2;
+  --color-surface: #EFE9E0;
+  --color-surface-hover: #E5DDD2;
+  --color-primary: #6A3F30;
+  --color-primary-hover: #5A3328;
+  --color-accent: #2D4A35;
+  --color-accent-hover: #203828;
+  --color-text: #3D2E24;
+  --color-text-muted: #74655A;
+  --color-border: #D0C5B8;
+  --color-shadow: rgba(61, 46, 36, 0.08);
+  --color-shadow-lg: rgba(61, 46, 36, 0.14);
+}
+
+[data-palette="parisian"][data-mode="night"] {
+  --color-background: #1E1B18;
+  --color-surface: #2A2521;
+  --color-surface-hover: #35302B;
+  --color-primary: #C49A82;
+  --color-primary-hover: #D4AA92;
+  --color-accent: #6B8E76;
+  --color-accent-hover: #7B9E86;
+  --color-text: #F5EFE6;
+  --color-text-muted: #A89A8E;
+  --color-border: #4D4640;
+  --color-shadow: rgba(0, 0, 0, 0.25);
+  --color-shadow-lg: rgba(0, 0, 0, 0.35);
+}
+
+/* ============================================
+   THEME: KYOTO GARDEN
+   Zen matcha greens, serene
+   ============================================ */
+[data-palette="kyoto"] {
+  --font-heading: 'Libre Baskerville', serif;
+  --font-body: 'Nunito', sans-serif;
+}
+
+[data-palette="kyoto"][data-mode="day"] {
+  --color-background: #F8FAF5;
+  --color-surface: #EDF2E6;
+  --color-surface-hover: #E2E9DA;
+  --color-primary: #4C6C4C;
+  --color-primary-hover: #3C5C3C;
+  --color-accent: #A8884A;
+  --color-accent-hover: #987838;
+  --color-text: #2D332D;
+  --color-text-muted: #5A645A;
+  --color-border: #C8D2C0;
+  --color-shadow: rgba(45, 51, 45, 0.06);
+  --color-shadow-lg: rgba(45, 51, 45, 0.10);
+}
+
+[data-palette="kyoto"][data-mode="night"] {
+  --color-background: #161918;
+  --color-surface: #1F2420;
+  --color-surface-hover: #2A302B;
+  --color-primary: #7DA37D;
+  --color-primary-hover: #8DB38D;
+  --color-accent: #D4B896;
+  --color-accent-hover: #E4C8A6;
+  --color-text: #E8ECE4;
+  --color-text-muted: #8A948A;
+  --color-border: #3F4A40;
+  --color-shadow: rgba(0, 0, 0, 0.25);
+  --color-shadow-lg: rgba(0, 0, 0, 0.35);
+}
+
+/* ============================================
+   BASE STYLES
+   ============================================ */
+@theme {
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  
+  html {
+    font-family: var(--font-body);
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    background-color: var(--color-background);
+    color: var(--color-text);
+    font-feature-settings: "rlig" 1, "calt" 1;
+    transition: background-color 0.4s ease, color 0.4s ease;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  font-weight: 500;
+  }
+  
+  /* Smooth theme transitions */
+  *, *::before, *::after {
+    transition: background-color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease, color 0.3s ease;
+  }
+}
+
+/* Paper texture overlay */
+.paper-texture {
+  position: relative;
+}
+
+.paper-texture::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.02;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+[data-mode="night"] .paper-texture::before {
+  opacity: 0.03;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-surface);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* Gentle breathing animations for plants */
+@keyframes gentle-sway {
+  0%, 100% {
+    transform: rotate(0deg) translateY(0);
+  }
+  25% {
+    transform: rotate(1deg) translateY(-2px);
+  }
+  75% {
+    transform: rotate(-1deg) translateY(2px);
+  }
+}
+
+@keyframes gentle-sway-delayed {
+  0%, 100% {
+    transform: rotate(0deg) translateY(0);
+  }
+  25% {
+    transform: rotate(-0.5deg) translateY(1px);
+  }
+  75% {
+    transform: rotate(0.5deg) translateY(-1px);
+  }
+}
+
+.animate-gentle-sway {
+  animation: gentle-sway 8s ease-in-out infinite;
+}
+
+.animate-gentle-sway-delayed {
+  animation: gentle-sway-delayed 10s ease-in-out infinite;
+  animation-delay: -3s;
+}
+
+@keyframes sway {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
+}
+
+@keyframes draw {
+  0%, 100% {
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dashoffset: 10;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.06;
+  }
+  50% {
+    transform: translateY(-8px) rotate(3deg);
+    opacity: 0.08;
+  }
+}
+
+/* Coffee steam animation */
+@keyframes steam {
+  0% {
+    transform: translateY(0) scaleX(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(-8px) scaleX(1.2);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(-16px) scaleX(0.8);
+    opacity: 0;
+  }
+}
+
+.animate-steam {
+  animation: steam 2.5s ease-in-out infinite;
+}
+
+.animate-steam-delayed {
+  animation: steam 2.5s ease-in-out infinite;
+  animation-delay: -0.8s;
+}
+
+.animate-steam-delayed-2 {
+  animation: steam 2.5s ease-in-out infinite;
+  animation-delay: -1.6s;
+}
