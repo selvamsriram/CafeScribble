@@ -1,7 +1,10 @@
 // GitHub OAuth Device Flow Authentication Service
 // Uses our own serverless proxy to avoid third-party CORS proxies
 
-const GITHUB_CLIENT_ID = 'Ov23liAv9nE0bXbTS0rs';
+// GitHub OAuth Client ID - loaded from environment variable for flexibility
+// In production, set VITE_GITHUB_CLIENT_ID in your hosting environment
+// Note: Client IDs are public (not secret), but using env vars allows easier rotation
+const GITHUB_CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID || 'Ov23liAv9nE0bXbTS0rs';
 const OAUTH_PROXY_URL = '/api/github-oauth';
 const STORAGE_KEYS = {
   accessToken: 'github_access_token',

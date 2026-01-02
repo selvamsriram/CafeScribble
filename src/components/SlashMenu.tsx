@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef, forwardRef, useImperativeHandle } from 'react';
+import type { Editor } from '@tiptap/react';
 import { cn } from '@/lib/utils';
 import {
   Heading1,
@@ -143,7 +144,7 @@ export const SlashMenu = forwardRef<SlashMenuRef, SlashMenuProps>(
 SlashMenu.displayName = 'SlashMenu';
 
 // Slash commands configuration
-export function getSlashCommands(editor: any): SlashCommand[] {
+export function getSlashCommands(editor: Editor): SlashCommand[] {
   return [
     {
       id: 'text',

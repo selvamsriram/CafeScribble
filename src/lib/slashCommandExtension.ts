@@ -1,10 +1,11 @@
 import { ReactRenderer } from '@tiptap/react';
-import tippy from 'tippy.js';
+import type { Editor } from '@tiptap/react';
+import tippy, { type Instance as TippyInstance } from 'tippy.js';
 import { SlashMenu, type SlashMenuRef, getSlashCommands, filterCommands, type SlashCommand } from '@/components/SlashMenu';
 
 // Create the suggestion plugin for slash commands
-export function createSlashSuggestion(editor: any) {
-  let popup: any = null;
+export function createSlashSuggestion(editor: Editor) {
+  let popup: TippyInstance | null = null;
   let component: ReactRenderer | null = null;
   let query = '';
   let isOpen = false;

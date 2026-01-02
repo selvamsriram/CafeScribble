@@ -64,7 +64,8 @@ export function EditorPage() {
   const [editor, setEditor] = useState<Editor | null>(null);
   const [isLinkInputOpen, setIsLinkInputOpen] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
-  const [, forceUpdate] = useState({});
+  // Used to trigger re-render when editor selection changes (for toolbar state)
+  const [, setRenderTrigger] = useState({});
   
   // Dialog for unsaved changes
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
@@ -260,8 +261,8 @@ export function EditorPage() {
   const handleEditorReady = useCallback((editorInstance: Editor) => {
     setEditor(editorInstance);
     // Listen for selection/transaction changes to update toolbar state
-    editorInstance.on('selectionUpdate', () => forceUpdate({}));
-    editorInstance.on('transaction', () => forceUpdate({}));
+    editorInstance.on('selectionUpdate', () => setRenderTrigger({}));
+    editorInstance.on('transaction', () => setRenderTrigger({}));
   }, []);
 
   // Handle link

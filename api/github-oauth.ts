@@ -65,19 +65,22 @@ export default async function handler(request: Request): Promise<Response> {
 }
 
 function getCorsHeaders(origin?: string | null): Record<string, string> {
-  // In production, restrict to your actual domains
-  // For development, allow localhost
+  // SECURITY: Strict origin allowlist - do NOT use wildcards in production
+  // Only add domains you explicitly control
   const allowedOrigins = [
     'https://www.cafescribble.app',
     'https://cafescribble.app',
     'https://cafe-scribble.vercel.app',
+    // Development origins (remove in production if not needed)
     'http://localhost:5173',
     'http://localhost:4173',
   ];
   
-  const allowOrigin = origin && allowedOrigins.some(allowed => 
-    origin === allowed || origin.endsWith('.vercel.app')
-  ) ? origin : allowedOrigins[0];
+  // SECURITY: Only allow exact matches from the allowlist
+  // Previously allowed any *.vercel.app which was a security vulnerability
+  const allowOrigin = origin && allowedOrigins.includes(origin) 
+    ? origin 
+    : allowedOrigins[0];
 
   return {
     'Access-Control-Allow-Origin': allowOrigin,
