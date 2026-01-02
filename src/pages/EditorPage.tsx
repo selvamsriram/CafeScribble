@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Editor } from '@tiptap/react';
 import { useAuth } from '@/hooks/useAuth';
@@ -78,18 +78,12 @@ export function EditorPage() {
   
   // Check if this is a new document from navigation state
   const newDocState = location.state as NewDocState | null;
+  
+  // Use ref to track if commit is in progress (prevents race conditions)
+  const isCommitInProgress = useRef(false);
 
-  // Load document on mount
-  useEffect(() => {
-    if (!selectedRepo || !decodedPath) {
-      navigate('/dashboard');
-      return;
-    }
-
-    loadDocument();
-  }, [selectedRepo, decodedPath, navigate]);
-
-  const loadDocument = async () => {
+  // Load document function wrapped in useCallback
+  const loadDocument = useCallback(async () => {
     if (!selectedRepo) return;
 
     try {
@@ -142,23 +136,35 @@ export function EditorPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedRepo, owner, repo, decodedPath, newDocState]);
+
+  // Load document on mount
+  useEffect(() => {
+    if (!selectedRepo || !decodedPath) {
+      navigate('/dashboard');
+      return;
+    }
+
+    loadDocument();
+  }, [selectedRepo, decodedPath, navigate, loadDocument]);
 
   // Handle content changes - just update local state, mark as uncommitted
   const handleContentChange = useCallback((newContent: string) => {
     setContent(newContent);
     // Mark as uncommitted since there are unsaved changes
-    if (githubStatus !== 'uncommitted') {
-      setGithubStatus('uncommitted');
-    }
-  }, [githubStatus]);
+    setGithubStatus((prev) => prev === 'uncommitted' ? prev : 'uncommitted');
+  }, []);
 
-  // Commit to GitHub (Cmd/Ctrl+S or save button)
-  const commitToGitHub = async (): Promise<boolean> => {
+  // Commit to GitHub (Cmd/Ctrl+S or save button) - wrapped in useCallback
+  const commitToGitHub = useCallback(async (): Promise<boolean> => {
     if (!document || !selectedRepo) return false;
 
     // Already committed and no changes
     if (githubStatus === 'committed') return true;
+
+    // Prevent race condition - if already committing, don't start another
+    if (isCommitInProgress.current) return false;
+    isCommitInProgress.current = true;
 
     try {
       setGithubStatus('committing');
@@ -188,13 +194,15 @@ export function EditorPage() {
       }
 
       setGithubStatus('committed');
+      isCommitInProgress.current = false;
       return true;
     } catch (err) {
       console.error('Failed to commit:', err);
       setGithubStatus('error');
+      isCommitInProgress.current = false;
       return false;
     }
-  };
+  }, [document, selectedRepo, githubStatus, isNewDocument, owner, repo, decodedPath, content]);
 
   // Manual save (Cmd/Ctrl + S) - commits to GitHub
   useEffect(() => {
@@ -207,7 +215,7 @@ export function EditorPage() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [content, document, isNewDocument, githubStatus]);
+  }, [commitToGitHub]);
 
   // Warn before closing tab with uncommitted changes
   useEffect(() => {

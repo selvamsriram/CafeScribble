@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { GitHubService, type ScribbleDocument } from '@/services/github';
@@ -47,15 +47,7 @@ export function DashboardPage() {
     ? GitHubService.parseRepoFullName(selectedRepo)
     : { owner: '', repo: '' };
 
-  useEffect(() => {
-    if (!selectedRepo) {
-      navigate('/repos');
-      return;
-    }
-    loadDocuments();
-  }, [selectedRepo, navigate]);
-
-  const loadDocuments = async () => {
+  const loadDocuments = useCallback(async () => {
     if (!selectedRepo) return;
 
     try {
@@ -69,7 +61,16 @@ export function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedRepo, owner, repo]);
+
+  useEffect(() => {
+    if (!selectedRepo) {
+      navigate('/repos');
+      return;
+    }
+    loadDocuments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedRepo, loadDocuments]);
 
   const createDocument = () => {
     if (!newDocName.trim() || !selectedRepo) return;
@@ -173,6 +174,10 @@ export function DashboardPage() {
                   src={user.avatar_url}
                   alt={user.login}
                   className="w-8 h-8 rounded-full ring-2 ring-[var(--color-border)]"
+                  onError={(e) => {
+                    // Fallback to GitHub identicon if avatar fails to load
+                    e.currentTarget.src = `https://github.com/identicons/${user.login}.png`;
+                  }}
                 />
                 <span className="text-sm text-[var(--color-text-muted)] hidden sm:inline">{user.login}</span>
               </div>

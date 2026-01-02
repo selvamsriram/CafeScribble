@@ -106,6 +106,10 @@ export function RepoPickerPage() {
                   src={user.avatar_url}
                   alt={user.login}
                   className="w-8 h-8 rounded-full ring-2 ring-[var(--color-border)]"
+                  onError={(e) => {
+                    // Fallback to GitHub identicon if avatar fails to load
+                    e.currentTarget.src = `https://github.com/identicons/${user.login}.png`;
+                  }}
                 />
                 <span className="text-sm text-[var(--color-text-muted)] hidden sm:inline">{user.login}</span>
               </div>

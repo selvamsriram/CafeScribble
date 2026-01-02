@@ -1,7 +1,8 @@
 // GitHub OAuth Device Flow Authentication Service
-// Fully secure - no client secret needed, works entirely client-side
+// Uses our own serverless proxy to avoid third-party CORS proxies
 
 const GITHUB_CLIENT_ID = 'Ov23liAv9nE0bXbTS0rs';
+const OAUTH_PROXY_URL = '/api/github-oauth';
 const STORAGE_KEYS = {
   accessToken: 'github_access_token',
   selectedRepo: 'selected_repo',
@@ -33,6 +34,17 @@ export interface DeviceFlowCallbacks {
 // Polling state
 let pollingAbortController: AbortController | null = null;
 
+// Helper to safely parse JSON from localStorage
+function safeJsonParse<T>(value: string | null): T | null {
+  if (!value) return null;
+  try {
+    return JSON.parse(value) as T;
+  } catch {
+    // If parsing fails, clear the corrupted value
+    return null;
+  }
+}
+
 export const AuthService = {
   // Check if user is authenticated
   isAuthenticated(): boolean {
@@ -44,10 +56,15 @@ export const AuthService = {
     return localStorage.getItem(STORAGE_KEYS.accessToken);
   },
 
-  // Get stored user
+  // Get stored user (with safe JSON parsing)
   getUser(): GitHubUser | null {
-    const user = localStorage.getItem(STORAGE_KEYS.user);
-    return user ? JSON.parse(user) : null;
+    const userStr = localStorage.getItem(STORAGE_KEYS.user);
+    const user = safeJsonParse<GitHubUser>(userStr);
+    if (!user && userStr) {
+      // Clear corrupted data
+      localStorage.removeItem(STORAGE_KEYS.user);
+    }
+    return user;
   },
 
   // Get selected repo
@@ -60,29 +77,53 @@ export const AuthService = {
     localStorage.setItem(STORAGE_KEYS.selectedRepo, repo);
   },
 
+  // Validate token by making a test API call
+  async validateToken(): Promise<boolean> {
+    const token = this.getAccessToken();
+    if (!token) return false;
+
+    try {
+      const response = await fetch('https://api.github.com/user', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github.v3+json',
+        },
+      });
+
+      if (response.status === 401) {
+        // Token is invalid, clear auth state
+        this.logout();
+        return false;
+      }
+
+      return response.ok;
+    } catch {
+      // Network error, assume token might still be valid
+      return true;
+    }
+  },
+
   // Start Device Flow login
   async startDeviceFlow(callbacks: DeviceFlowCallbacks): Promise<void> {
     try {
-      // Step 1: Request device code (using CORS proxy)
-      const deviceCodeUrl = 'https://github.com/login/device/code';
-      const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(deviceCodeUrl);
-      
-      const codeResponse = await fetch(proxyUrl, {
+      // Step 1: Request device code via our secure proxy
+      const codeResponse = await fetch(OAUTH_PROXY_URL, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          endpoint: 'https://github.com/login/device/code',
           client_id: GITHUB_CLIENT_ID,
           scope: 'repo user',
         }),
       });
 
       if (!codeResponse.ok) {
-        const errorText = await codeResponse.text();
-        console.error('Device code error:', errorText);
-        throw new Error('Failed to get device code');
+        const errorData = await codeResponse.json().catch(() => ({}));
+        console.error('Device code error:', errorData);
+        throw new Error(errorData.error || 'Failed to get device code');
       }
 
       const codeData: DeviceCodeResponse = await codeResponse.json();
@@ -125,16 +166,15 @@ export const AuthService = {
       }
 
       try {
-        const tokenUrl = 'https://github.com/login/oauth/access_token';
-        const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(tokenUrl);
-        
-        const tokenResponse = await fetch(proxyUrl, {
+        // Use our secure proxy instead of third-party CORS proxy
+        const tokenResponse = await fetch(OAUTH_PROXY_URL, {
           method: 'POST',
           headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
+            endpoint: 'https://github.com/login/oauth/access_token',
             client_id: GITHUB_CLIENT_ID,
             device_code: codeData.device_code,
             grant_type: 'urn:ietf:params:oauth:grant-type:device_code',

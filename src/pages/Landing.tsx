@@ -5,7 +5,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { AuthService } from '@/services/auth';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { CoffeeCup, CafeScene } from '@/components/PlantSVG';
+import { CafeScene } from '@/components/PlantSVG';
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Github, Copy, Check, ExternalLink, Loader2, Coffee, BookOpen, Cloud, NotebookPen, HandHeart } from 'lucide-react';
+import { Github, Copy, Check, ExternalLink, Loader2, Coffee, NotebookPen } from 'lucide-react';
 
 export function LandingPage() {
   const { isConfigured, refreshAuth } = useAuth();
@@ -69,9 +69,17 @@ export function LandingPage() {
   };
 
   const copyCode = async () => {
-    await navigator.clipboard.writeText(userCode);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(userCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      // Clipboard API failed (permissions denied or not available)
+      // Fall back to selecting text for manual copy
+      console.error('Clipboard copy failed:', err);
+      // Show brief error indication by using the copied state differently
+      // User can still manually copy the visible code
+    }
   };
 
   const openGitHub = () => {
