@@ -37,6 +37,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkAuth();
   }, [checkAuth]);
 
+  // Keep auth state in sync if localStorage changes (multi-tab / external changes)
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (!e.key) return;
+      if (e.key === 'github_access_token' || e.key === 'github_user' || e.key === 'selected_repo') {
+        checkAuth();
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, [checkAuth]);
+
   const logout = useCallback(() => {
     AuthService.logout();
     setIsAuthenticated(false);

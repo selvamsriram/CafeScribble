@@ -22,7 +22,7 @@ import {
   LogOut,
   Loader2,
   ArrowRight,
-  Coffee
+  Coffee,
 } from 'lucide-react';
 
 export function RepoPickerPage() {
@@ -147,15 +147,20 @@ export function RepoPickerPage() {
         </Button>
 
         {/* Search */}
-        <div className="relative mb-6">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-muted)]" />
-          <Input
-            type="text"
-            placeholder="Search your repositories..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-12"
-          />
+        <div className="mb-6">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-muted)]" />
+            <Input
+              type="text"
+              placeholder="Search your repositories..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-12"
+            />
+          </div>
+          <p className="mt-2 text-xs text-[var(--color-text-muted)]/60 text-center">
+            New repositories may take a minute to show up after creation
+          </p>
         </div>
 
         {/* Error State */}

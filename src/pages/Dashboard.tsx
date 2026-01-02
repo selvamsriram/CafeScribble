@@ -71,21 +71,25 @@ export function DashboardPage() {
     }
   };
 
-  const createDocument = async () => {
-    if (!newDocName.trim()) return;
+  const createDocument = () => {
+    if (!newDocName.trim() || !selectedRepo) return;
 
-    try {
-      setProcessing(true);
-      const doc = await GitHubService.createScribble(owner, repo, newDocName.trim());
-      setShowCreateDialog(false);
-      setNewDocName('');
-      navigate(`/editor/${encodeURIComponent(doc.path)}`);
-    } catch (err) {
-      setError('Failed to create document');
-      console.error(err);
-    } finally {
-      setProcessing(false);
-    }
+    // Create the path from the name (same logic as GitHubService.createScribble)
+    const name = newDocName.trim();
+    const path = `${name.replace(/[^a-zA-Z0-9-_]/g, '-')}.md`;
+    const defaultContent = `# ${name}\n\nStart writing here...`;
+
+    setShowCreateDialog(false);
+    setNewDocName('');
+    
+    // Navigate to editor with new document state
+    navigate(`/editor/${encodeURIComponent(path)}`, {
+      state: {
+        isNew: true,
+        name,
+        content: defaultContent,
+      },
+    });
   };
 
   const deleteDocument = async () => {
@@ -207,15 +211,20 @@ export function DashboardPage() {
         </div>
 
         {/* Search */}
-        <div className="relative mb-8">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-muted)]" />
-          <Input
-            type="text"
-            placeholder="Search scribbles..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-12"
-          />
+        <div className="mb-8">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-muted)]" />
+            <Input
+              type="text"
+              placeholder="Search scribbles..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-12"
+            />
+          </div>
+          <p className="mt-2 text-xs text-[var(--color-text-muted)]/60 text-center">
+            Newly committed scribbles may take a minute to appear
+          </p>
         </div>
 
         {/* Error State */}

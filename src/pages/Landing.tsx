@@ -16,7 +16,7 @@ import {
 import { Github, Copy, Check, ExternalLink, Loader2, Coffee, BookOpen, Cloud } from 'lucide-react';
 
 export function LandingPage() {
-  const { isConfigured } = useAuth();
+  const { isConfigured, refreshAuth } = useAuth();
   const { mode } = useTheme();
   const navigate = useNavigate();
   
@@ -24,12 +24,14 @@ export function LandingPage() {
   const [userCode, setUserCode] = useState('');
   const [verificationUri, setVerificationUri] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   const startLogin = async () => {
     setIsLoading(true);
     setError(null);
+    setIsSuccess(false);
     setShowDeviceFlow(true);
 
     AuthService.startDeviceFlow({
@@ -39,8 +41,16 @@ export function LandingPage() {
         setIsLoading(false);
       },
       onSuccess: () => {
-        setShowDeviceFlow(false);
-        navigate('/repos');
+        // Ensure app auth state reflects the new token immediately
+        refreshAuth();
+        setIsSuccess(true);
+        setIsLoading(false);
+
+        // Brief success affordance, then route to repo selection
+        window.setTimeout(() => {
+          setShowDeviceFlow(false);
+          navigate('/repos');
+        }, 600);
       },
       onError: (err) => {
         setError(err);
@@ -54,6 +64,7 @@ export function LandingPage() {
     setShowDeviceFlow(false);
     setUserCode('');
     setVerificationUri('');
+    setIsSuccess(false);
     setError(null);
   };
 
@@ -194,6 +205,14 @@ export function LandingPage() {
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-8 h-8 text-[var(--color-primary)] animate-spin" />
+            </div>
+          ) : isSuccess ? (
+            <div className="py-10 text-center">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-border)]">
+                <Check className="w-4 h-4" />
+                <span className="text-sm font-medium">Connected</span>
+              </div>
+              <p className="text-sm text-[var(--color-text-muted)] mt-3">Taking you to repo selection...</p>
             </div>
           ) : error ? (
             <div className="py-6">

@@ -1,17 +1,22 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Editor } from '@tiptap/react';
 import { useAuth } from '@/hooks/useAuth';
 import { GitHubService, type ScribbleDocument } from '@/services/github';
 import { ScribbleEditor } from '@/components/Editor';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import {
   ArrowLeft,
-  Save,
-  Cloud,
-  CloudOff,
   Loader2,
   Check,
   AlertCircle,
@@ -31,34 +36,48 @@ import {
   Minus,
   Undo,
   Redo,
+  Github,
 } from 'lucide-react';
 
-type SaveStatus = 'saved' | 'saving' | 'unsaved' | 'error';
+// Navigation state passed from Dashboard when creating new document
+interface NewDocState {
+  isNew: true;
+  name: string;
+  content: string;
+}
+
+// GitHub commit status: indicates cloud commit state  
+type GitHubStatus = 'committed' | 'committing' | 'uncommitted' | 'error';
 
 export function EditorPage() {
   const { path } = useParams<{ path: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { selectedRepo } = useAuth();
 
   const [document, setDocument] = useState<ScribbleDocument | null>(null);
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
-  const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
+  const [githubStatus, setGithubStatus] = useState<GitHubStatus>('committed');
+  const [isNewDocument, setIsNewDocument] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editor, setEditor] = useState<Editor | null>(null);
   const [isLinkInputOpen, setIsLinkInputOpen] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
   const [, forceUpdate] = useState({});
-
-  // Debounce timer ref
-  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastSavedContentRef = useRef<string>('');
+  
+  // Dialog for unsaved changes
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
+  const [isCommitting, setIsCommitting] = useState(false);
 
   const { owner, repo } = selectedRepo
     ? GitHubService.parseRepoFullName(selectedRepo)
     : { owner: '', repo: '' };
 
   const decodedPath = path ? decodeURIComponent(path) : '';
+  
+  // Check if this is a new document from navigation state
+  const newDocState = location.state as NewDocState | null;
 
   // Load document on mount
   useEffect(() => {
@@ -71,10 +90,30 @@ export function EditorPage() {
   }, [selectedRepo, decodedPath, navigate]);
 
   const loadDocument = async () => {
+    if (!selectedRepo) return;
+
     try {
       setLoading(true);
       setError(null);
 
+      // Check if this is a new document from navigation state
+      if (newDocState?.isNew) {
+        const doc: ScribbleDocument = {
+          name: newDocState.name,
+          path: decodedPath,
+          sha: '', // No SHA yet
+          content: newDocState.content,
+        };
+
+        setDocument(doc);
+        setContent(newDocState.content);
+        setIsNewDocument(true);
+        setGithubStatus('uncommitted');
+        setLoading(false);
+        return;
+      }
+
+      // Existing document - fetch from GitHub
       const fileContent = await GitHubService.getFileContent(owner, repo, decodedPath);
       
       // Get file metadata
@@ -95,7 +134,8 @@ export function EditorPage() {
 
       setDocument(doc);
       setContent(fileContent);
-      lastSavedContentRef.current = fileContent;
+      setIsNewDocument(false);
+      setGithubStatus('committed');
     } catch (err) {
       setError('Failed to load document');
       console.error(err);
@@ -104,88 +144,75 @@ export function EditorPage() {
     }
   };
 
-  // Auto-save with debounce
+  // Handle content changes - just update local state, mark as uncommitted
   const handleContentChange = useCallback((newContent: string) => {
     setContent(newContent);
-
-    // Check if content actually changed from last saved
-    if (newContent !== lastSavedContentRef.current) {
-      setSaveStatus('unsaved');
-
-      // Clear existing timeout
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
-
-      // Set new timeout for auto-save (2 seconds)
-      saveTimeoutRef.current = setTimeout(() => {
-        saveDocument(newContent);
-      }, 2000);
+    // Mark as uncommitted since there are unsaved changes
+    if (githubStatus !== 'uncommitted') {
+      setGithubStatus('uncommitted');
     }
-  }, []);
+  }, [githubStatus]);
 
-  const saveDocument = async (contentToSave?: string) => {
-    if (!document) return;
+  // Commit to GitHub (Cmd/Ctrl+S or save button)
+  const commitToGitHub = async (): Promise<boolean> => {
+    if (!document || !selectedRepo) return false;
 
-    const saveContent = contentToSave ?? content;
-
-    // Don't save if content hasn't changed
-    if (saveContent === lastSavedContentRef.current) {
-      setSaveStatus('saved');
-      return;
-    }
+    // Already committed and no changes
+    if (githubStatus === 'committed') return true;
 
     try {
-      setSaveStatus('saving');
+      setGithubStatus('committing');
 
-      const updatedDoc = await GitHubService.updateScribble(
-        owner,
-        repo,
-        document,
-        saveContent
-      );
+      if (isNewDocument) {
+        // Create new file on GitHub for the first time
+        const result = await GitHubService.saveFile(
+          owner,
+          repo,
+          decodedPath,
+          content,
+          `Create scribble: ${document.name}`
+        );
 
-      setDocument(updatedDoc);
-      lastSavedContentRef.current = saveContent;
-      setSaveStatus('saved');
+        // Update document with SHA and mark as no longer new
+        setDocument({ ...document, sha: result.sha, content });
+        setIsNewDocument(false);
+      } else {
+        // Update existing file
+        const updatedDoc = await GitHubService.updateScribble(
+          owner,
+          repo,
+          document,
+          content
+        );
+        setDocument(updatedDoc);
+      }
+
+      setGithubStatus('committed');
+      return true;
     } catch (err) {
-      console.error('Failed to save:', err);
-      setSaveStatus('error');
+      console.error('Failed to commit:', err);
+      setGithubStatus('error');
+      return false;
     }
   };
 
-  // Manual save (Cmd/Ctrl + S)
+  // Manual save (Cmd/Ctrl + S) - commits to GitHub
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 's') {
         e.preventDefault();
-        
-        // Clear auto-save timeout
-        if (saveTimeoutRef.current) {
-          clearTimeout(saveTimeoutRef.current);
-        }
-        
-        saveDocument();
+        commitToGitHub();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [content, document]);
+  }, [content, document, isNewDocument, githubStatus]);
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  // Warn before leaving with unsaved changes
+  // Warn before closing tab with uncommitted changes
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (saveStatus === 'unsaved') {
+      if (githubStatus === 'uncommitted') {
         e.preventDefault();
         e.returnValue = '';
       }
@@ -193,15 +220,32 @@ export function EditorPage() {
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [saveStatus]);
+  }, [githubStatus]);
 
+  // Handle back button - show dialog if uncommitted
   const goBack = () => {
-    // Save before leaving if there are unsaved changes
-    if (saveStatus === 'unsaved') {
-      saveDocument().then(() => navigate('/dashboard'));
+    if (githubStatus === 'uncommitted') {
+      setShowLeaveDialog(true);
     } else {
       navigate('/dashboard');
     }
+  };
+
+  // Handle commit and leave
+  const handleCommitAndLeave = async () => {
+    setIsCommitting(true);
+    const success = await commitToGitHub();
+    setIsCommitting(false);
+    if (success) {
+      setShowLeaveDialog(false);
+      navigate('/dashboard');
+    }
+  };
+
+  // Handle discard and leave
+  const handleDiscardAndLeave = () => {
+    setShowLeaveDialog(false);
+    navigate('/dashboard');
   };
 
   // Handle editor ready
@@ -224,6 +268,16 @@ export function EditorPage() {
     setIsLinkInputOpen(false);
     setLinkUrl('');
   }, [editor, linkUrl]);
+
+  const githubSaveDisabled = githubStatus === 'committed' || githubStatus === 'committing';
+  const githubStatusLabel =
+    githubStatus === 'committed'
+      ? 'Up to date on GitHub'
+      : githubStatus === 'committing'
+        ? 'Saving to GitHub...'
+        : githubStatus === 'error'
+          ? 'Save failed — click to retry'
+          : 'Unsaved changes — click to save to GitHub';
 
   if (loading) {
     return (
@@ -278,48 +332,42 @@ export function EditorPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* Save Status */}
-            <div className="flex items-center text-sm">
-              {saveStatus === 'saved' && (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
-                  <Cloud className="w-4 h-4" />
-                  <span className="hidden sm:inline">Saved</span>
-                </div>
-              )}
-              {saveStatus === 'saving' && (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[var(--color-surface)] text-[var(--color-text-muted)]">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                </div>
-              )}
-              {saveStatus === 'unsaved' && (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[var(--color-accent)]/10 text-[var(--color-accent)]">
-                  <CloudOff className="w-4 h-4" />
-                </div>
-              )}
-              {saveStatus === 'error' && (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-red-500/10 text-red-500">
-                  <AlertCircle className="w-4 h-4" />
-                </div>
-              )}
-            </div>
-
+          <div className="flex items-center gap-2">
             <ThemeToggle />
 
-            <Button
-              onClick={() => saveDocument()}
-              disabled={saveStatus === 'saved' || saveStatus === 'saving'}
-              size="default"
-              className="h-10 px-4"
-            >
-              {saveStatus === 'saving' ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : saveStatus === 'saved' ? (
-                <Check className="w-5 h-5" />
-              ) : (
-                <Save className="w-5 h-5" />
+            <button
+              onClick={() => commitToGitHub()}
+              disabled={githubSaveDisabled}
+              title={githubStatusLabel}
+              aria-label={githubStatusLabel}
+              className={cn(
+                'flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-200',
+                'border border-[var(--color-border)]',
+                'shadow-sm hover:shadow-md',
+                'disabled:opacity-50 disabled:cursor-not-allowed',
+                // Uncommitted: accent background with white text
+                githubStatus === 'uncommitted' && 'bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white',
+                // Committed: surface background with primary text
+                githubStatus === 'committed' && 'bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] text-[var(--color-primary)]',
+                // Committing: surface background with muted text
+                githubStatus === 'committing' && 'bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] text-[var(--color-text-muted)]',
+                // Error: red background with white text
+                githubStatus === 'error' && 'bg-red-500/90 hover:bg-red-600 text-white',
+                // Default (fallback): surface background with muted text
+                githubStatus !== 'uncommitted' && githubStatus !== 'committed' && githubStatus !== 'committing' && githubStatus !== 'error' && 'bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
               )}
-            </Button>
+            >
+              {githubStatus === 'committing' ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : githubStatus === 'committed' ? (
+                <Check className="w-4 h-4" />
+              ) : githubStatus === 'error' ? (
+                <AlertCircle className="w-4 h-4" />
+              ) : (
+                <Github className="w-4 h-4" />
+              )}
+              <span className="text-sm font-medium">Commit</span>
+            </button>
           </div>
         </div>
 
@@ -519,6 +567,44 @@ export function EditorPage() {
           </div>
         </footer>
       </main>
+
+      {/* Unsaved Changes Dialog */}
+      <Dialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Unsaved Changes</DialogTitle>
+            <DialogDescription>
+              You have unsaved changes. Would you like to save them to GitHub before leaving?
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="ghost"
+              onClick={handleDiscardAndLeave}
+              disabled={isCommitting}
+            >
+              Discard
+            </Button>
+            <Button
+              onClick={handleCommitAndLeave}
+              disabled={isCommitting}
+            >
+              {isCommitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Github className="w-4 h-4 mr-2" />
+                  Save to GitHub
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
