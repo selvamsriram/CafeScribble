@@ -468,44 +468,6 @@ export function CafeScene({ className }: PlantProps) {
         </g>
       </g>
 
-      {/* === PEN === */}
-      <g transform="translate(160, 200) rotate(-25)">
-        {/* Pen body */}
-        <rect
-          x="0"
-          y="0"
-          width="120"
-          height="10"
-          rx="5"
-          fill="var(--color-primary)"
-          opacity="0.8"
-        />
-        {/* Pen clip */}
-        <path
-          d="M15 0 L15 -8 L25 -8 L25 0"
-          fill="var(--color-primary)"
-          opacity="0.6"
-        />
-        {/* Pen tip */}
-        <path
-          d="M120 5 L135 5 L140 5"
-          stroke="var(--color-text)"
-          strokeWidth="2"
-          strokeLinecap="round"
-          opacity="0.5"
-        />
-        {/* Pen grip section */}
-        <rect
-          x="90"
-          y="0"
-          width="30"
-          height="10"
-          rx="2"
-          fill="var(--color-text)"
-          opacity="0.2"
-        />
-      </g>
-
       {/* === LATTE CUP === */}
       <g transform="translate(150, 20)">
         {/* Saucer */}

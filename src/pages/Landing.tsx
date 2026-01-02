@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Github, Copy, Check, ExternalLink, Loader2, Coffee, BookOpen, Cloud } from 'lucide-react';
+import { Github, Copy, Check, ExternalLink, Loader2, Coffee, BookOpen, Cloud, NotebookPen, HandHeart } from 'lucide-react';
 
 export function LandingPage() {
   const { isConfigured, refreshAuth } = useAuth();
@@ -97,9 +97,9 @@ export function LandingPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-[var(--color-primary)] flex items-center justify-center shadow-md shadow-[var(--color-shadow)]">
-                <Coffee className="w-5 h-5 text-white" />
+                <NotebookPen className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-semibold tracking-tight font-[var(--font-heading)]">Cafe-Scribble</span>
+              <span className="text-xl font-semibold tracking-tight font-[var(--font-heading)]">Cafe Scribble</span>
             </div>
             <ThemeToggle />
           </div>
@@ -112,11 +112,6 @@ export function LandingPage() {
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               {/* Text content */}
               <div className="text-center lg:text-left">
-                {/* Badge */}
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] mb-8 shadow-sm">
-                  <CoffeeCup className="w-5 h-5" />
-                  <span className="text-sm text-[var(--color-text-muted)]">Write over a warm cup</span>
-                </div>
 
                 {/* Main headline */}
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 font-[var(--font-heading)]">
@@ -126,7 +121,7 @@ export function LandingPage() {
 
                 <p className="text-lg text-[var(--color-text-muted)] max-w-xl mb-10 leading-relaxed">
                   A peaceful markdown editor that feels like your favorite coffee shop. 
-                  Your notes stay in your GitHub repository — private, secure, and always accessible.
+                  Your notes stay in your GitHub repository. Private, secure, and always accessible.
                 </p>
 
                 {/* CTA */}
@@ -161,12 +156,12 @@ export function LandingPage() {
             {/* Feature cards */}
             <div className="grid md:grid-cols-3 gap-6 mt-24">
               <FeatureCard
-                icon={<BookOpen className="w-6 h-6" />}
+                icon={<NotebookPen className="w-6 h-6" />}
                 title="Distraction-Free"
-                description="A clean, minimal editor that lets you focus on what matters — your words."
+                description="A clean, minimal editor that lets you focus on what matters, your words."
               />
               <FeatureCard
-                icon={<Cloud className="w-6 h-6" />}
+                icon={<Github className="w-6 h-6" />}
                 title="GitHub Storage"
                 description="Your scribbles live in your repository. Version history, sync, and backups built-in."
               />
@@ -182,7 +177,7 @@ export function LandingPage() {
         {/* Footer */}
         <footer className="container mx-auto px-6 py-8 border-t border-[var(--color-border)]">
           <p className="text-center text-sm text-[var(--color-text-muted)]">
-            Crafted with care. Open source and privacy-focused.
+            Crafted with love. Consider supporting <a href="https://www.seattlechildrens.org/giving" className="text-[var(--color-primary)] hover:underline">Seattle Children's Hospital</a>.
           </p>
         </footer>
       </div>

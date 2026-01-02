@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 
 export type ThemeMode = 'day' | 'night';
-export type ThemePalette = 'sage' | 'kissaten' | 'hygge' | 'parisian' | 'kyoto';
+export type ThemePalette = 'sage' | 'kissaten' | 'hygge' | 'parisian' | 'kyoto' | 'cafe';
 
 interface ThemeContextType {
   mode: ThemeMode;
@@ -41,6 +41,11 @@ export const THEME_INFO: Record<ThemePalette, { name: string; description: strin
     name: 'Kyoto Garden',
     description: 'Zen matcha greens, serene & calm',
     fonts: { heading: 'Libre Baskerville', body: 'Nunito' },
+  },
+  cafe: {
+    name: 'Modern Café',
+    description: 'Rich espresso & warm caramel tones',
+    fonts: { heading: 'Merriweather', body: 'Poppins' },
   },
 };
 

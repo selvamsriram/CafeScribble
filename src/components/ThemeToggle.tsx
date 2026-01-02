@@ -130,11 +130,12 @@ export function ThemeToggle({ className, showPaletteSelector = true }: ThemeTogg
 // Small preview dot showing theme colors
 function ThemePreviewDot({ palette }: { palette: ThemePalette }) {
   const colors: Record<ThemePalette, { bg: string; primary: string; accent: string }> = {
-    sage: { bg: '#FDF8F3', primary: '#7C9A82', accent: '#D4A5A5' },
+    sage: { bg: '#FDF8F3', primary: '#2c5c35', accent: '#D4A5A5' },
     kissaten: { bg: '#F7F3EE', primary: '#8B5A3C', accent: '#6B7B6B' },
     hygge: { bg: '#FAFAF8', primary: '#78716C', accent: '#B45309' },
     parisian: { bg: '#FAF7F2', primary: '#7B4B3A', accent: '#3D5A45' },
     kyoto: { bg: '#F8FAF5', primary: '#5C7C5C', accent: '#C8A882' },
+    cafe: { bg: '#F5F1EB', primary: '#4A2C1A', accent: '#C97D3A' },
   };
 
   const c = colors[palette];
