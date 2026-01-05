@@ -47,6 +47,7 @@ export function DashboardPage() {
     ? GitHubService.parseRepoFullName(selectedRepo)
     : { owner: '', repo: '' };
 
+  // Loads all scribbles from the selected repo (root `*.md`, excluding `README.md`).
   const loadDocuments = useCallback(async () => {
     if (!selectedRepo) return;
 
@@ -75,7 +76,8 @@ export function DashboardPage() {
   const createDocument = () => {
     if (!newDocName.trim() || !selectedRepo) return;
 
-    // Create the path from the name (same logic as GitHubService.createScribble)
+    // Create the path from the name (same sanitization as `GitHubService.createScribble`).
+    // Note: the file is not created on GitHub until the first explicit commit in the editor.
     const name = newDocName.trim();
     const path = `${name.replace(/[^a-zA-Z0-9-_]/g, '-')}.md`;
     const defaultContent = `# ${name}\n\nStart writing here...`;
@@ -83,7 +85,7 @@ export function DashboardPage() {
     setShowCreateDialog(false);
     setNewDocName('');
     
-    // Navigate to editor with new document state
+    // Navigate to the editor, passing initial content through navigation state.
     navigate(`/editor/${encodeURIComponent(path)}`, {
       state: {
         isNew: true,
@@ -143,7 +145,6 @@ export function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-[var(--color-background)]">
-      {/* Header */}
       <header className="border-b border-[var(--color-border)] bg-[var(--color-background)] sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -195,7 +196,6 @@ export function DashboardPage() {
       </header>
 
       <main className="container mx-auto px-6 py-10 max-w-5xl">
-        {/* Title & Actions */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-2xl font-bold text-[var(--color-text)] mb-1 font-[var(--font-heading)]">Your Scribbles</h1>
@@ -215,7 +215,6 @@ export function DashboardPage() {
           </Button>
         </div>
 
-        {/* Search */}
         <div className="mb-8">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-muted)]" />
@@ -232,20 +231,17 @@ export function DashboardPage() {
           </p>
         </div>
 
-        {/* Error State */}
         {error && (
           <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 mb-6">
             {error}
           </div>
         )}
 
-        {/* Loading State */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-8 h-8 text-[var(--color-primary)] animate-spin" />
           </div>
         ) : filteredDocs.length === 0 ? (
-          /* Empty State */
           <div className="text-center py-16">
             <div className="mb-6">
               <LatteArt className="w-40 h-44 mx-auto opacity-60" />
@@ -269,7 +265,6 @@ export function DashboardPage() {
             )}
           </div>
         ) : (
-          /* Document Grid */
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {filteredDocs.map((doc) => (
               <div
@@ -338,7 +333,6 @@ export function DashboardPage() {
         )}
       </main>
 
-      {/* Create Document Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
         <DialogContent>
           <DialogHeader>
@@ -384,7 +378,6 @@ export function DashboardPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Document Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent>
           <DialogHeader>
@@ -419,7 +412,6 @@ export function DashboardPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Rename Document Dialog */}
       <Dialog open={showRenameDialog} onOpenChange={setShowRenameDialog}>
         <DialogContent>
           <DialogHeader>

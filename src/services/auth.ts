@@ -1,11 +1,8 @@
 // GitHub OAuth Device Flow Authentication Service
-// Uses our own serverless proxy to avoid third-party CORS proxies
+// Note: the Device Flow endpoints do not support browser CORS, so we use a small serverless proxy.
 
-// GitHub OAuth Client ID - loaded from environment variable for flexibility
-// In production, set VITE_GITHUB_CLIENT_ID in your hosting environment
-// Note: Client IDs are public (not secret), but using env vars allows easier rotation
-const GITHUB_CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID || 'Ov23liAv9nE0bXbTS0rs';
-const OAUTH_PROXY_URL = '/api/github-oauth';
+const GITHUB_CLIENT_ID: string = import.meta.env.VITE_GITHUB_CLIENT_ID || '';
+const OAUTH_PROXY_URL: string = import.meta.env.VITE_OAUTH_PROXY_URL || '/api/github-oauth';
 const STORAGE_KEYS = {
   accessToken: 'github_access_token',
   selectedRepo: 'selected_repo',
@@ -259,6 +256,6 @@ export const AuthService = {
 
   // Check if the app is configured
   isConfigured(): boolean {
-    return GITHUB_CLIENT_ID.length > 0 && !GITHUB_CLIENT_ID.includes('YOUR_');
+    return GITHUB_CLIENT_ID.length > 0;
   },
 };

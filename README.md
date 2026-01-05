@@ -1,15 +1,14 @@
 # Cafe Scribble
 
-A beautiful, cozy markdown editor that saves documents directly to your GitHub repository. Designed with warm cafe aesthetics and a distraction-free writing experience.
+A cozy markdown editor that saves documents directly to your GitHub repository. It’s a React SPA with a small serverless OAuth proxy (required due to CORS on GitHub’s Device Flow endpoints).
 
 ## ✨ Features
 
-- **Rich Markdown Editor** — Powered by Tiptap with a full formatting toolbar and slash commands (`/`)
-- **GitHub-Native Storage** — Your documents are stored as `.md` files in your own repository with full version history
-- **OAuth Device Flow** — Secure client-side GitHub authentication (no backend server required)
-- **Multiple Themes** — 6 carefully crafted cafe-inspired color palettes with day/night modes
-- **Manual Save** — Press `Cmd/Ctrl + S` to commit changes to GitHub with visual status indicators
-- **100% Client-Side** — Runs entirely in your browser; your data stays in your GitHub account
+- **Rich Markdown Editor**: Tiptap editor with a formatting toolbar and a small command menu hint (`/`)
+- **GitHub-native storage**: notes are `.md` files committed to a repo you choose (full Git history)
+- **GitHub OAuth Device Flow**: login without a client secret; token stored in your browser
+- **Multiple themes**: 6 cafe-inspired palettes with day/night modes
+- **Manual save**: `Cmd/Ctrl + S` commits changes to GitHub with clear status feedback
 
 ## 🚀 Quick Start
 
@@ -20,7 +19,7 @@ A beautiful, cozy markdown editor that saves documents directly to your GitHub r
 3. Fill in the details:
    - **Application name**: `Cafe Scribble` (or your preferred name)
    - **Homepage URL**: Your deployment URL (e.g., `https://cafescribble.app`)
-   - **Authorization callback URL**: Same as homepage URL
+   - **Authorization callback URL**: Any valid URL you control (Device Flow does not use the callback, but GitHub requires the field)
 4. Click **"Register application"**
 5. Copy the **Client ID** (you don't need the Client Secret for Device Flow)
 
@@ -30,9 +29,11 @@ Create a `.env` file in the project root:
 
 ```env
 VITE_GITHUB_CLIENT_ID=your_client_id_here
+# Optional: point at a deployed OAuth proxy when running the Vite dev server
+# VITE_OAUTH_PROXY_URL=https://your-deployed-domain.example/api/github-oauth
 ```
 
-Or set the environment variable in your hosting platform (Vercel, Netlify, etc.).
+Or set the environment variable in your hosting platform.
 
 ### 3. Install & Run
 
@@ -41,7 +42,12 @@ npm install
 npm run dev
 ```
 
-Visit `http://localhost:5173` to start using the app.
+Visit `http://localhost:5173`.
+
+Note: the login flow calls `VITE_OAUTH_PROXY_URL` (defaults to `/api/github-oauth`). The Vite dev server does **not** serve the `api/` directory, so for local auth you must either:
+
+- Run with the Vercel dev server: `npx vercel dev`
+- Or set `VITE_OAUTH_PROXY_URL` to a deployed instance of the proxy (Vercel recommended)
 
 ## 📦 Deployment
 
@@ -58,14 +64,14 @@ npm run build:gh
 npm run deploy
 ```
 
-Note: GitHub Pages requires the OAuth proxy to be hosted elsewhere (Vercel recommended for the API).
+Note: GitHub Pages requires the OAuth proxy to be hosted elsewhere (Vercel recommended).
 
 ## 🛡️ Security Considerations
 
 ### OAuth & Token Storage
 
-- **GitHub OAuth Device Flow** is used for authentication — no client secret is exposed
-- **Access tokens are stored in localStorage** — This is standard for SPAs but vulnerable to XSS attacks
+- **GitHub OAuth Device Flow** is used for authentication — no client secret is shipped to the browser
+- **Access tokens are stored in localStorage** — convenient for an SPA, but increases impact of XSS
 - Tokens are validated on each session start and invalidated on logout
 
 ### CORS Configuration
@@ -104,19 +110,20 @@ Each theme supports both day and night modes.
 - **Tiptap** — Headless rich text editor
 - **Radix UI** — Accessible dialog components
 - **GitHub API** — Repository and file operations
-- **Vercel Edge Functions** — OAuth proxy (no server required)
+- **Vercel Edge Runtime** — OAuth proxy in `api/github-oauth.ts`
 
 ## 📁 Project Structure
 
 ```
 ├── api/
-│   └── github-oauth.ts    # Vercel Edge Function for OAuth proxy
+│   └── github-oauth.ts    # Edge Runtime function: GitHub OAuth proxy
 ├── src/
 │   ├── components/        # React components
 │   ├── hooks/             # Custom React hooks (auth, theme)
 │   ├── lib/               # Utilities (markdown conversion, etc.)
 │   ├── pages/             # Route pages
 │   └── services/          # GitHub API & Auth services
+├── DESIGN.md              # Detailed design doc (maps to the code)
 ├── public/                # Static assets
 └── index.html             # Entry point
 ```
@@ -154,4 +161,4 @@ MIT
 
 ---
 
-*Crafted with ☕ and care. Consider supporting [Seattle Children's Hospital](https://www.seattlechildrens.org/giving).*
+Consider supporting [Seattle Children's Hospital](https://www.seattlechildrens.org/giving).

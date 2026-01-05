@@ -14,7 +14,7 @@ export function ThemeToggle({ className, showPaletteSelector = true }: ThemeTogg
 
   return (
     <div className={cn('flex items-center gap-2', className)}>
-      {/* Palette Selector */}
+      {/* Palette picker (writes to ThemeContext + localStorage) */}
       {showPaletteSelector && (
         <div className="relative">
           <button
@@ -34,13 +34,11 @@ export function ThemeToggle({ className, showPaletteSelector = true }: ThemeTogg
 
           {showPalettes && (
             <>
-              {/* Backdrop */}
               <div 
                 className="fixed inset-0 z-40" 
                 onClick={() => setShowPalettes(false)}
               />
               
-              {/* Dropdown */}
               <div className="absolute right-0 top-full mt-2 z-50 w-64 p-2 rounded-xl bg-[var(--color-background)] border border-[var(--color-border)] shadow-xl shadow-[var(--color-shadow-lg)]">
                 <div className="text-xs font-medium text-[var(--color-text-muted)] px-2 py-1.5 mb-1">
                   Choose Theme
@@ -78,7 +76,7 @@ export function ThemeToggle({ className, showPaletteSelector = true }: ThemeTogg
         </div>
       )}
 
-      {/* Day/Night Toggle */}
+      {/* Mode toggle (day/night) */}
       <button
         onClick={toggleMode}
         className={cn(
@@ -91,7 +89,6 @@ export function ThemeToggle({ className, showPaletteSelector = true }: ThemeTogg
         )}
         aria-label={`Switch to ${mode === 'day' ? 'night' : 'day'} mode`}
       >
-        {/* Track icons */}
         <span className="absolute inset-0 flex items-center justify-between px-1.5">
           <Sun 
             className={cn(
@@ -107,7 +104,6 @@ export function ThemeToggle({ className, showPaletteSelector = true }: ThemeTogg
           />
         </span>
         
-        {/* Sliding thumb */}
         <span
           className={cn(
             'absolute top-1 w-6 h-6 rounded-full transition-all duration-300',
@@ -127,7 +123,6 @@ export function ThemeToggle({ className, showPaletteSelector = true }: ThemeTogg
   );
 }
 
-// Small preview dot showing theme colors
 function ThemePreviewDot({ palette }: { palette: ThemePalette }) {
   const colors: Record<ThemePalette, { bg: string; primary: string; accent: string }> = {
     sage: { bg: '#FDF8F3', primary: '#2c5c35', accent: '#D4A5A5' },

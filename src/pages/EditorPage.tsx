@@ -46,7 +46,7 @@ interface NewDocState {
   content: string;
 }
 
-// GitHub commit status: indicates cloud commit state  
+// UI save state relative to GitHub. There is no autosave to GitHub; commits are explicit.
 type GitHubStatus = 'committed' | 'committing' | 'uncommitted' | 'error';
 
 export function EditorPage() {
@@ -64,10 +64,10 @@ export function EditorPage() {
   const [editor, setEditor] = useState<Editor | null>(null);
   const [isLinkInputOpen, setIsLinkInputOpen] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
-  // Used to trigger re-render when editor selection changes (for toolbar state)
+  // Used to trigger re-render when editor selection changes (for toolbar state).
   const [, setRenderTrigger] = useState({});
   
-  // Dialog for unsaved changes
+  // Dialog for unsaved changes when navigating away.
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [isCommitting, setIsCommitting] = useState(false);
 
@@ -77,13 +77,14 @@ export function EditorPage() {
 
   const decodedPath = path ? decodeURIComponent(path) : '';
   
-  // Check if this is a new document from navigation state
+  // When creating a new doc from the dashboard we pass initial content via navigation state,
+  // and only create the GitHub file on the first explicit commit.
   const newDocState = location.state as NewDocState | null;
   
-  // Use ref to track if commit is in progress (prevents race conditions)
+  // Use a ref to prevent overlapping commits (e.g. double click / repeated Cmd+S).
   const isCommitInProgress = useRef(false);
 
-  // Load document function wrapped in useCallback
+  // Load document content and associated SHA (needed for GitHub updates/deletes).
   const loadDocument = useCallback(async () => {
     if (!selectedRepo) return;
 
@@ -108,7 +109,7 @@ export function EditorPage() {
         return;
       }
 
-      // Existing document - fetch from GitHub
+      // Existing document: fetch content, then fetch root listing to find the file SHA.
       const fileContent = await GitHubService.getFileContent(owner, repo, decodedPath);
       
       // Get file metadata
@@ -156,7 +157,7 @@ export function EditorPage() {
     setGithubStatus((prev) => prev === 'uncommitted' ? prev : 'uncommitted');
   }, []);
 
-  // Commit to GitHub (Cmd/Ctrl+S or save button) - wrapped in useCallback
+  // Commit to GitHub (Cmd/Ctrl+S or commit button).
   const commitToGitHub = useCallback(async (): Promise<boolean> => {
     if (!document || !selectedRepo) return false;
 
@@ -205,7 +206,7 @@ export function EditorPage() {
     }
   }, [document, selectedRepo, githubStatus, isNewDocument, owner, repo, decodedPath, content]);
 
-  // Manual save (Cmd/Ctrl + S) - commits to GitHub
+  // Manual save shortcut: commits to GitHub.
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 's') {
@@ -218,7 +219,7 @@ export function EditorPage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [commitToGitHub]);
 
-  // Warn before closing tab with uncommitted changes
+  // Warn before closing tab with uncommitted changes.
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (githubStatus === 'uncommitted') {
@@ -231,7 +232,7 @@ export function EditorPage() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [githubStatus]);
 
-  // Handle back button - show dialog if uncommitted
+  // Back navigation: prompt if there are uncommitted changes.
   const goBack = () => {
     if (githubStatus === 'uncommitted') {
       setShowLeaveDialog(true);
@@ -316,9 +317,7 @@ export function EditorPage() {
 
   return (
     <div className="min-h-screen bg-[var(--color-background)] flex flex-col">
-      {/* Header with integrated toolbar */}
       <header className="border-b border-[var(--color-border)] bg-[var(--color-background)] sticky top-0 z-50">
-        {/* Top row: Navigation, title, status, actions - LARGER */}
         <div className="container mx-auto px-6 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <Button
@@ -380,11 +379,9 @@ export function EditorPage() {
           </div>
         </div>
 
-        {/* Formatting toolbar row - CENTERED and LARGER */}
         {editor && (
           <div className="border-t border-[var(--color-border)] bg-[var(--color-surface)]/50">
             <div className="container mx-auto px-6 py-2.5 flex items-center justify-center gap-1 overflow-x-auto">
-              {/* Undo/Redo */}
               <ToolbarButton
                 onClick={() => editor.chain().focus().undo().run()}
                 disabled={!editor.can().undo()}
@@ -402,7 +399,6 @@ export function EditorPage() {
 
               <ToolbarDivider />
 
-              {/* Headings */}
               <ToolbarButton
                 onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
                 isActive={editor.isActive('heading', { level: 1 })}
@@ -427,7 +423,6 @@ export function EditorPage() {
 
               <ToolbarDivider />
 
-              {/* Text formatting */}
               <ToolbarButton
                 onClick={() => editor.chain().focus().toggleBold().run()}
                 isActive={editor.isActive('bold')}
@@ -459,7 +454,6 @@ export function EditorPage() {
 
               <ToolbarDivider />
 
-              {/* Lists */}
               <ToolbarButton
                 onClick={() => editor.chain().focus().toggleBulletList().run()}
                 isActive={editor.isActive('bulletList')}
@@ -484,7 +478,6 @@ export function EditorPage() {
 
               <ToolbarDivider />
 
-              {/* Block elements */}
               <ToolbarButton
                 onClick={() => editor.chain().focus().toggleBlockquote().run()}
                 isActive={editor.isActive('blockquote')}
@@ -501,7 +494,6 @@ export function EditorPage() {
 
               <ToolbarDivider />
 
-              {/* Link */}
               {isLinkInputOpen ? (
                 <div className="flex items-center gap-2">
                   <input
@@ -547,7 +539,6 @@ export function EditorPage() {
         )}
       </header>
 
-      {/* Editor */}
       <main className="flex-1 flex flex-col">
         <div className="flex-1 relative bg-[var(--color-surface)] border-t border-[var(--color-border)] paper-texture">
           <div className="max-w-4xl mx-auto px-8 md:px-16 lg:px-24 py-8">
@@ -559,7 +550,6 @@ export function EditorPage() {
           </div>
         </div>
 
-        {/* Keyboard shortcuts hint - slim footer */}
         <footer className="border-t border-[var(--color-border)] bg-[var(--color-background)] px-6 py-2">
           <div className="flex items-center justify-center gap-4 text-xs text-[var(--color-text-muted)]">
             <span>
@@ -577,7 +567,6 @@ export function EditorPage() {
         </footer>
       </main>
 
-      {/* Unsaved Changes Dialog */}
       <Dialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
         <DialogContent>
           <DialogHeader>
@@ -618,7 +607,6 @@ export function EditorPage() {
   );
 }
 
-// Toolbar button component - LARGER
 function ToolbarButton({
   onClick,
   isActive,

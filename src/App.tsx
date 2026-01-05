@@ -56,7 +56,7 @@ function AppRoutes() {
 
   return (
     <Routes>
-      {/* Public routes */}
+      {/* Public entrypoint. If already signed in, route based on whether a repo is selected. */}
       <Route
         path="/"
         element={
@@ -71,7 +71,8 @@ function AppRoutes() {
           )
         }
       />
-      {/* Protected routes */}
+
+      {/* Authenticated routes */}
       <Route
         path="/repos"
         element={
@@ -101,7 +102,7 @@ function AppRoutes() {
         }
       />
 
-      {/* Catch all - redirect to home */}
+      {/* SPA catch-all */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

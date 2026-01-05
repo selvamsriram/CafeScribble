@@ -3,9 +3,35 @@ import { AuthService } from './auth';
 
 const GITHUB_API = 'https://api.github.com';
 
+// Retry configuration for eventual consistency
+const CONSISTENCY_CHECK_INTERVAL = 1500; // ms between checks
+const CONSISTENCY_MAX_ATTEMPTS = 10; // max retries (10 seconds total)
+
 interface GitHubApiOptions {
   method?: string;
   body?: unknown;
+}
+
+// Helper to wait for a specified time
+function wait(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Helper to retry until a condition is met or max attempts reached
+async function waitForCondition(
+  checkFn: () => Promise<boolean>,
+  maxAttempts: number = CONSISTENCY_MAX_ATTEMPTS,
+  interval: number = CONSISTENCY_CHECK_INTERVAL
+): Promise<boolean> {
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    if (await checkFn()) {
+      return true;
+    }
+    if (attempt < maxAttempts - 1) {
+      await wait(interval);
+    }
+  }
+  return false;
 }
 
 async function githubFetch<T>(endpoint: string, options: GitHubApiOptions = {}): Promise<T> {
@@ -106,6 +132,29 @@ export const GitHubService = {
     }
   },
 
+  // Check if a file exists in the repository
+  async fileExists(owner: string, repo: string, path: string): Promise<boolean> {
+    try {
+      await githubFetch<FileContent>(`/repos/${owner}/${repo}/contents/${path}`);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  // Wait until the file listing is consistent (file exists or doesn't exist as expected)
+  async waitForFileConsistency(
+    owner: string,
+    repo: string,
+    path: string,
+    shouldExist: boolean
+  ): Promise<boolean> {
+    return waitForCondition(async () => {
+      const exists = await this.fileExists(owner, repo, path);
+      return exists === shouldExist;
+    });
+  },
+
   // Get all markdown files in the repository root
   async getScribbleDocuments(owner: string, repo: string): Promise<ScribbleDocument[]> {
     const contents = await this.getContents(owner, repo);
@@ -193,7 +242,7 @@ export const GitHubService = {
     return { sha: response.content.sha };
   },
 
-  // Delete a file
+  // Delete a file and wait for consistency
   async deleteFile(
     owner: string,
     repo: string,
@@ -208,9 +257,15 @@ export const GitHubService = {
         sha,
       },
     });
+
+    // Wait for deletion to be reflected in GitHub's API
+    const isConsistent = await this.waitForFileConsistency(owner, repo, path, false);
+    if (!isConsistent) {
+      console.warn(`File deletion may not be fully propagated yet: ${path}`);
+    }
   },
 
-  // Create a new scribble document
+  // Create a new scribble document and wait for consistency
   async createScribble(
     owner: string,
     repo: string,
@@ -225,6 +280,12 @@ export const GitHubService = {
       content,
       `Create scribble: ${name}`
     );
+
+    // Wait for file to be visible in GitHub's API
+    const isConsistent = await this.waitForFileConsistency(owner, repo, path, true);
+    if (!isConsistent) {
+      console.warn(`File creation may not be fully propagated yet: ${path}`);
+    }
 
     return {
       name,
@@ -257,7 +318,7 @@ export const GitHubService = {
     };
   },
 
-  // Rename a scribble document
+  // Rename a scribble document and wait for consistency
   async renameScribble(
     owner: string,
     repo: string,
@@ -265,6 +326,7 @@ export const GitHubService = {
     newName: string
   ): Promise<ScribbleDocument> {
     const newPath = `${newName.replace(/[^a-zA-Z0-9-_]/g, '-')}.md`;
+    const oldPath = document.path;
     
     // Create new file with new name
     const result = await this.saveFile(
@@ -275,8 +337,24 @@ export const GitHubService = {
       `Rename scribble: ${document.name} -> ${newName}`
     );
 
-    // Delete old file
-    await this.deleteFile(owner, repo, document.path, document.sha);
+    // Wait for new file to be visible
+    await this.waitForFileConsistency(owner, repo, newPath, true);
+
+    // Delete old file (this also waits for consistency)
+    await this.deleteFile(owner, repo, oldPath, document.sha);
+
+    // Final verification: ensure both conditions are met
+    const isFullyConsistent = await waitForCondition(async () => {
+      const [newExists, oldExists] = await Promise.all([
+        this.fileExists(owner, repo, newPath),
+        this.fileExists(owner, repo, oldPath),
+      ]);
+      return newExists && !oldExists;
+    });
+
+    if (!isFullyConsistent) {
+      console.warn(`Rename operation may not be fully propagated. New: ${newPath}, Old: ${oldPath}`);
+    }
 
     return {
       name: newName,

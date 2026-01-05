@@ -41,12 +41,12 @@ export function LandingPage() {
         setIsLoading(false);
       },
       onSuccess: () => {
-        // Ensure app auth state reflects the new token immediately
+        // Ensure app auth state reflects the new token immediately.
         refreshAuth();
         setIsSuccess(true);
         setIsLoading(false);
 
-        // Brief success affordance, then route to repo selection
+        // Brief success affordance, then route to repo selection.
         window.setTimeout(() => {
           setShowDeviceFlow(false);
           navigate('/repos');
@@ -88,7 +88,7 @@ export function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[var(--color-background)] text-[var(--color-text)] overflow-hidden relative">
-      {/* Warm gradient overlay */}
+      {/* Subtle background gradient (palette-aware) */}
       <div 
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -100,7 +100,7 @@ export function LandingPage() {
       />
 
       <div className="relative z-10">
-        {/* Header */}
+        {/* App header */}
         <header className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -113,15 +113,11 @@ export function LandingPage() {
           </div>
         </header>
 
-        {/* Hero Section */}
+        {/* Marketing + login entrypoint */}
         <main className="container mx-auto px-6 pt-12 pb-24">
           <div className="max-w-4xl mx-auto">
-            {/* Hero content with illustration */}
             <div className="grid lg:grid-cols-2 gap-12 items-center">
-              {/* Text content */}
               <div className="text-center lg:text-left">
-
-                {/* Main headline */}
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 font-[var(--font-heading)]">
                   <span className="block text-[var(--color-text)]">Write with</span>
                   <span className="block text-[var(--color-primary)]">calm & clarity</span>
@@ -132,13 +128,11 @@ export function LandingPage() {
                   Your notes stay in your GitHub repository. Private, secure, and always accessible.
                 </p>
 
-                {/* CTA */}
                 {!isConfigured ? (
                   <div className="p-6 rounded-2xl bg-[var(--color-accent)]/10 border border-[var(--color-accent)]/20 max-w-md mx-auto lg:mx-0">
                     <p className="text-[var(--color-accent)] text-sm mb-2 font-medium">Setup Required</p>
                     <p className="text-[var(--color-text-muted)] text-sm">
-                      Create a GitHub OAuth App and update the client ID in{' '}
-                      <code className="text-[var(--color-primary)] bg-[var(--color-surface)] px-1.5 py-0.5 rounded">src/services/auth.ts</code>
+                      Set <code className="text-[var(--color-primary)] bg-[var(--color-surface)] px-1.5 py-0.5 rounded">VITE_GITHUB_CLIENT_ID</code> and reload.
                     </p>
                   </div>
                 ) : (
@@ -153,7 +147,6 @@ export function LandingPage() {
                 )}
               </div>
 
-              {/* Illustration - Cafe Scene with latte and notepad */}
               <div className="hidden lg:flex items-center justify-center">
                 <div className="relative">
                   <CafeScene className="w-80 h-72" />
@@ -161,7 +154,6 @@ export function LandingPage() {
               </div>
             </div>
 
-            {/* Feature cards */}
             <div className="grid md:grid-cols-3 gap-6 mt-24">
               <FeatureCard
                 icon={<NotebookPen className="w-6 h-6" />}
@@ -182,7 +174,7 @@ export function LandingPage() {
           </div>
         </main>
 
-        {/* Footer */}
+        {/* App footer */}
         <footer className="container mx-auto px-6 py-8 border-t border-[var(--color-border)]">
           <p className="text-center text-sm text-[var(--color-text-muted)]">
             Crafted with love. Consider supporting <a href="https://www.seattlechildrens.org/giving" className="text-[var(--color-primary)] hover:underline">Seattle Children's Hospital</a>.
@@ -190,7 +182,7 @@ export function LandingPage() {
         </footer>
       </div>
 
-      {/* Device Flow Dialog */}
+      {/* GitHub Device Flow dialog */}
       <Dialog open={showDeviceFlow} onOpenChange={(open) => !open && cancelLogin()}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -228,7 +220,6 @@ export function LandingPage() {
             </div>
           ) : userCode ? (
             <div className="py-4 space-y-6">
-              {/* The code */}
               <div className="text-center">
                 <p className="text-sm text-[var(--color-text-muted)] mb-3">Your one-time code:</p>
                 <div className="relative inline-block">
@@ -249,7 +240,6 @@ export function LandingPage() {
                 </div>
               </div>
 
-              {/* Instructions */}
               <div className="space-y-3">
                 <div className="flex items-start gap-3 text-sm">
                   <div className="w-6 h-6 rounded-full bg-[var(--color-primary)]/20 text-[var(--color-primary)] flex items-center justify-center shrink-0 text-xs font-bold">
@@ -271,13 +261,11 @@ export function LandingPage() {
                 </div>
               </div>
 
-              {/* Open GitHub button */}
               <Button onClick={openGitHub} className="w-full h-12">
                 <ExternalLink className="w-4 h-4 mr-2" />
                 Open GitHub
               </Button>
 
-              {/* Waiting indicator */}
               <div className="flex items-center justify-center gap-2 text-sm text-[var(--color-text-muted)]">
                 <Loader2 className="w-4 h-4 animate-spin" />
                 <span>Waiting for authorization...</span>

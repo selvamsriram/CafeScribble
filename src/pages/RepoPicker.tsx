@@ -42,6 +42,7 @@ export function RepoPickerPage() {
     loadRepos();
   }, []);
 
+  // Loads the current user's repos. Newly created repos can take a short time to appear.
   const loadRepos = async () => {
     try {
       setLoading(true);
@@ -87,7 +88,6 @@ export function RepoPickerPage() {
 
   return (
     <div className="min-h-screen bg-[var(--color-background)]">
-      {/* Header */}
       <header className="border-b border-[var(--color-border)] bg-[var(--color-background)] sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -127,7 +127,6 @@ export function RepoPickerPage() {
       </header>
 
       <main className="container mx-auto px-6 py-12 max-w-3xl">
-        {/* Title Section */}
         <div className="text-center mb-10">
           <div className="mb-6">
             <LatteArt className="w-36 h-40 mx-auto opacity-70" />
@@ -140,7 +139,6 @@ export function RepoPickerPage() {
           </p>
         </div>
 
-        {/* Create New Repo Button */}
         <Button
           onClick={() => setShowCreateDialog(true)}
           className="w-full mb-6 h-14"
@@ -150,7 +148,6 @@ export function RepoPickerPage() {
           Create New Repository
         </Button>
 
-        {/* Search */}
         <div className="mb-6">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-muted)]" />
@@ -167,20 +164,17 @@ export function RepoPickerPage() {
           </p>
         </div>
 
-        {/* Error State */}
         {error && (
           <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 mb-6">
             {error}
           </div>
         )}
 
-        {/* Loading State */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-8 h-8 text-[var(--color-primary)] animate-spin" />
           </div>
         ) : (
-          /* Repository List */
           <div className="space-y-2">
             {filteredRepos.length === 0 ? (
               <div className="text-center py-12 text-[var(--color-text-muted)]">
@@ -218,7 +212,6 @@ export function RepoPickerPage() {
         )}
       </main>
 
-      {/* Create Repository Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
         <DialogContent>
           <DialogHeader>

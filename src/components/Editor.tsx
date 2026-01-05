@@ -5,10 +5,9 @@ import Typography from '@tiptap/extension-typography';
 import Link from '@tiptap/extension-link';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { markdownToHtml, htmlToMarkdown } from '@/lib/markdown';
 import { cn } from '@/lib/utils';
-import { createSlashSuggestion } from '@/lib/slashCommandExtension';
 
 interface EditorProps {
   content: string;
@@ -18,8 +17,6 @@ interface EditorProps {
 }
 
 export function ScribbleEditor({ content, onChange, onEditorReady, className }: EditorProps) {
-  const slashCleanupRef = useRef<(() => void) | null>(null);
-
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -86,19 +83,6 @@ export function ScribbleEditor({ content, onChange, onEditorReady, className }: 
       }
     }
   }, [content, editor]);
-
-  // Set up slash command suggestion
-  useEffect(() => {
-    if (editor) {
-      slashCleanupRef.current = createSlashSuggestion(editor);
-    }
-    
-    return () => {
-      if (slashCleanupRef.current) {
-        slashCleanupRef.current();
-      }
-    };
-  }, [editor]);
 
   // Notify parent when editor is ready
   useEffect(() => {
