@@ -558,11 +558,6 @@ export function EditorPage() {
               <kbd className="px-1.5 py-0.5 rounded bg-[var(--color-surface)] border border-[var(--color-border)] text-[10px]">S</kbd>
               <span className="ml-1.5">save</span>
             </span>
-            <span className="w-px h-3 bg-[var(--color-border)]" />
-            <span>
-              <kbd className="px-1.5 py-0.5 rounded bg-[var(--color-surface)] border border-[var(--color-border)] text-[10px]">/</kbd>
-              <span className="ml-1.5">commands</span>
-            </span>
           </div>
         </footer>
       </main>
