@@ -5,7 +5,6 @@ import { useTheme } from '@/hooks/useTheme';
 import { AuthService } from '@/services/auth';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { CafeScene } from '@/components/PlantSVG';
 import {
   Dialog,
   DialogContent,
@@ -13,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Github, Copy, Check, ExternalLink, Loader2, Coffee, NotebookPen } from 'lucide-react';
+import { Github, Copy, Check, ExternalLink, Loader2, Sparkles } from 'lucide-react';
 
 export function LandingPage() {
   const { isConfigured, refreshAuth } = useAuth();
@@ -104,9 +103,6 @@ export function LandingPage() {
         <header className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[var(--color-primary)] flex items-center justify-center shadow-md shadow-[var(--color-shadow)]">
-                <NotebookPen className="w-5 h-5 text-white" />
-              </div>
               <span className="text-xl font-semibold tracking-tight font-[var(--font-heading)]">Cafe Scribble</span>
             </div>
             <ThemeToggle />
@@ -117,13 +113,24 @@ export function LandingPage() {
         <main className="container mx-auto px-6 pt-12 pb-24">
           <div className="max-w-4xl mx-auto">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <div className="flex justify-center lg:justify-start">
+                <div className="relative w-80 sm:w-96 lg:w-[28rem]">
+                  <div className="absolute inset-0 blur-3xl bg-[var(--color-primary)]/15 scale-110" />
+                  <img
+                    src="/latte.png"
+                    alt="Latte art"
+                    className="relative w-full h-auto rounded-[28px] shadow-2xl shadow-[var(--color-shadow-lg)] rotate-[-8deg]"
+                  />
+                </div>
+              </div>
+
               <div className="text-center lg:text-left">
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 font-[var(--font-heading)]">
                   <span className="block text-[var(--color-text)]">Write with</span>
                   <span className="block text-[var(--color-primary)]">calm & clarity</span>
                 </h1>
 
-                <p className="text-lg text-[var(--color-text-muted)] max-w-xl mb-10 leading-relaxed">
+                <p className="text-lg text-[var(--color-text-muted)] max-w-xl mb-10 leading-relaxed ml-auto mr-auto lg:ml-0 lg:mr-0">
                   A peaceful markdown editor that feels like your favorite coffee shop. 
                   Your notes stay in your GitHub repository. Private, secure, and always accessible.
                 </p>
@@ -146,17 +153,11 @@ export function LandingPage() {
                   </Button>
                 )}
               </div>
-
-              <div className="hidden lg:flex items-center justify-center">
-                <div className="relative">
-                  <CafeScene className="w-80 h-72" />
-                </div>
-              </div>
             </div>
 
             <div className="grid md:grid-cols-3 gap-6 mt-24">
               <FeatureCard
-                icon={<NotebookPen className="w-6 h-6" />}
+                icon={<Check className="w-6 h-6" />}
                 title="Distraction-Free"
                 description="A clean, minimal editor that lets you focus on what matters, your words."
               />
@@ -166,7 +167,7 @@ export function LandingPage() {
                 description="Your scribbles live in your repository. Version history, sync, and backups built-in."
               />
               <FeatureCard
-                icon={<Coffee className="w-6 h-6" />}
+                icon={<Sparkles className="w-6 h-6" />}
                 title="Cozy Cafe Vibes"
                 description="Warm colors, gentle animations, and a peaceful cafe atmosphere for your best writing."
               />

@@ -5,7 +5,6 @@ import { GitHubService, type ScribbleDocument } from '@/services/github';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { LatteArt } from '@/components/PlantSVG';
 import {
   Dialog,
   DialogContent,
@@ -24,7 +23,6 @@ import {
   LogOut,
   Loader2,
   FolderOpen,
-  Coffee,
 } from 'lucide-react';
 
 export function DashboardPage() {
@@ -144,15 +142,21 @@ export function DashboardPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[var(--color-background)]">
-      <header className="border-b border-[var(--color-border)] bg-[var(--color-background)] sticky top-0 z-50">
+    <div className="min-h-screen bg-[var(--color-background)] relative overflow-hidden">
+      {/* Decorative latte background (hidden on very small screens to avoid layout issues) */}
+      <div className="hidden sm:block absolute top-[-4%] right-[-10%] pointer-events-none select-none z-0 opacity-18">
+        <img
+          src="/latte.png"
+          alt=""
+          className="w-[65vw] max-w-[820px] min-w-[520px] object-contain drop-shadow-2xl"
+        />
+      </div>
+
+      <header className="border-b border-[var(--color-border)] bg-[var(--color-background)]/85 backdrop-blur-sm sticky top-0 z-50 relative">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[var(--color-primary)] flex items-center justify-center shadow-sm">
-                <Coffee className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-lg font-semibold text-[var(--color-text)] font-[var(--font-heading)]">Cafe-Scribble</span>
+              <span className="text-lg font-semibold text-[var(--color-text)] font-[var(--font-heading)]">Cafe Scribble</span>
             </div>
             
             {selectedRepo && (
@@ -195,7 +199,7 @@ export function DashboardPage() {
         </div>
       </header>
 
-      <main className="container mx-auto px-6 py-10 max-w-5xl">
+      <main className="container mx-auto px-6 py-10 max-w-5xl relative z-10">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-2xl font-bold text-[var(--color-text)] mb-1 font-[var(--font-heading)]">Your Scribbles</h1>
@@ -227,7 +231,7 @@ export function DashboardPage() {
             />
           </div>
           <p className="mt-2 text-xs text-[var(--color-text-muted)]/60 text-center">
-            Newly committed scribbles may take a minute to appear
+            Only the markdown documents in the root directory are shown
           </p>
         </div>
 
@@ -243,9 +247,6 @@ export function DashboardPage() {
           </div>
         ) : filteredDocs.length === 0 ? (
           <div className="text-center py-16">
-            <div className="mb-6">
-              <LatteArt className="w-40 h-44 mx-auto opacity-60" />
-            </div>
             <h3 className="text-lg font-medium text-[var(--color-text)] mb-2 font-[var(--font-heading)]">
               {searchQuery ? 'No scribbles match your search' : 'No scribbles yet'}
             </h3>

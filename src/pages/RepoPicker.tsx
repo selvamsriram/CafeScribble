@@ -5,7 +5,6 @@ import { GitHubService, type Repository } from '@/services/github';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { LatteArt } from '@/components/PlantSVG';
 import {
   Dialog,
   DialogContent,
@@ -22,7 +21,6 @@ import {
   LogOut,
   Loader2,
   ArrowRight,
-  Coffee,
 } from 'lucide-react';
 
 export function RepoPickerPage() {
@@ -68,7 +66,7 @@ export function RepoPickerPage() {
       setCreating(true);
       const repo = await GitHubService.createRepository(
         newRepoName.trim(),
-        'My scribbles - Created by Cafe-Scribble',
+        'My scribbles - Created by Cafe Scribble',
         isPrivate
       );
       setShowCreateDialog(false);
@@ -87,14 +85,20 @@ export function RepoPickerPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[var(--color-background)]">
-      <header className="border-b border-[var(--color-border)] bg-[var(--color-background)] sticky top-0 z-50">
+    <div className="min-h-screen bg-[var(--color-background)] relative overflow-hidden">
+      {/* Decorative latte image to the side */}
+      <div className="absolute top-[5%] left-[10%] pointer-events-none select-none z-0">
+        <img
+          src="/latte.png"
+          alt=""
+          className="w-[60vw] max-w-[820px] min-w-[520px] opacity-22 object-contain drop-shadow-2xl"
+        />
+      </div>
+
+      <header className="border-b border-[var(--color-border)] bg-[var(--color-background)]/85 backdrop-blur-sm sticky top-0 z-50 relative">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[var(--color-primary)] flex items-center justify-center shadow-sm">
-              <Coffee className="w-4 h-4 text-white" />
-            </div>
-            <span className="text-lg font-semibold text-[var(--color-text)] font-[var(--font-heading)]">Cafe-Scribble</span>
+            <span className="text-lg font-semibold text-[var(--color-text)] font-[var(--font-heading)]">Cafe Scribble</span>
           </div>
           
           <div className="flex items-center gap-4">
@@ -126,11 +130,8 @@ export function RepoPickerPage() {
         </div>
       </header>
 
-      <main className="container mx-auto px-6 py-12 max-w-3xl">
+      <main className="container mx-auto px-6 py-12 max-w-3xl relative z-10">
         <div className="text-center mb-10">
-          <div className="mb-6">
-            <LatteArt className="w-36 h-40 mx-auto opacity-70" />
-          </div>
           <h1 className="text-2xl font-bold text-[var(--color-text)] mb-3 font-[var(--font-heading)]">
             Where should we save your scribbles?
           </h1>

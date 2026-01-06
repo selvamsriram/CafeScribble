@@ -20,7 +20,6 @@ import {
   Loader2,
   Check,
   AlertCircle,
-  Coffee,
   Bold,
   Italic,
   Strikethrough,
@@ -318,8 +317,8 @@ export function EditorPage() {
   return (
     <div className="min-h-screen bg-[var(--color-background)] flex flex-col">
       <header className="border-b border-[var(--color-border)] bg-[var(--color-background)] sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-3 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
+        <div className="container mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             <Button
               variant="ghost"
               size="default"
@@ -333,14 +332,13 @@ export function EditorPage() {
             <div className="h-6 w-px bg-[var(--color-border)] hidden sm:block" />
 
             <div className="flex items-center gap-2 min-w-0">
-              <Coffee className="w-5 h-5 text-[var(--color-primary)] shrink-0" />
-              <h1 className="text-base font-semibold text-[var(--color-text)] truncate max-w-[150px] sm:max-w-[280px] font-[var(--font-heading)]">
+              <h1 className="text-base font-semibold text-[var(--color-text)] truncate max-w-[150px] sm:max-w-[320px] font-[var(--font-heading)]">
                 {document?.name}
               </h1>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <ThemeToggle />
 
             <button
@@ -374,166 +372,168 @@ export function EditorPage() {
               ) : (
                 <Github className="w-4 h-4" />
               )}
-              <span className="text-sm font-medium">Commit</span>
+              <span className="text-xs sm:text-sm font-medium">Commit</span>
             </button>
           </div>
         </div>
 
         {editor && (
           <div className="border-t border-[var(--color-border)] bg-[var(--color-surface)]/50">
-            <div className="container mx-auto px-6 py-2.5 flex items-center justify-center gap-1 overflow-x-auto">
-              <ToolbarButton
-                onClick={() => editor.chain().focus().undo().run()}
-                disabled={!editor.can().undo()}
-                title="Undo"
-              >
-                <Undo className="w-5 h-5" />
-              </ToolbarButton>
-              <ToolbarButton
-                onClick={() => editor.chain().focus().redo().run()}
-                disabled={!editor.can().redo()}
-                title="Redo"
-              >
-                <Redo className="w-5 h-5" />
-              </ToolbarButton>
-
-              <ToolbarDivider />
-
-              <ToolbarButton
-                onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-                isActive={editor.isActive('heading', { level: 1 })}
-                title="Heading 1"
-              >
-                <Heading1 className="w-5 h-5" />
-              </ToolbarButton>
-              <ToolbarButton
-                onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-                isActive={editor.isActive('heading', { level: 2 })}
-                title="Heading 2"
-              >
-                <Heading2 className="w-5 h-5" />
-              </ToolbarButton>
-              <ToolbarButton
-                onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-                isActive={editor.isActive('heading', { level: 3 })}
-                title="Heading 3"
-              >
-                <Heading3 className="w-5 h-5" />
-              </ToolbarButton>
-
-              <ToolbarDivider />
-
-              <ToolbarButton
-                onClick={() => editor.chain().focus().toggleBold().run()}
-                isActive={editor.isActive('bold')}
-                title="Bold"
-              >
-                <Bold className="w-5 h-5" />
-              </ToolbarButton>
-              <ToolbarButton
-                onClick={() => editor.chain().focus().toggleItalic().run()}
-                isActive={editor.isActive('italic')}
-                title="Italic"
-              >
-                <Italic className="w-5 h-5" />
-              </ToolbarButton>
-              <ToolbarButton
-                onClick={() => editor.chain().focus().toggleStrike().run()}
-                isActive={editor.isActive('strike')}
-                title="Strikethrough"
-              >
-                <Strikethrough className="w-5 h-5" />
-              </ToolbarButton>
-              <ToolbarButton
-                onClick={() => editor.chain().focus().toggleCode().run()}
-                isActive={editor.isActive('code')}
-                title="Code"
-              >
-                <Code className="w-5 h-5" />
-              </ToolbarButton>
-
-              <ToolbarDivider />
-
-              <ToolbarButton
-                onClick={() => editor.chain().focus().toggleBulletList().run()}
-                isActive={editor.isActive('bulletList')}
-                title="Bullet List"
-              >
-                <List className="w-5 h-5" />
-              </ToolbarButton>
-              <ToolbarButton
-                onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                isActive={editor.isActive('orderedList')}
-                title="Numbered List"
-              >
-                <ListOrdered className="w-5 h-5" />
-              </ToolbarButton>
-              <ToolbarButton
-                onClick={() => editor.chain().focus().toggleTaskList().run()}
-                isActive={editor.isActive('taskList')}
-                title="Task List"
-              >
-                <CheckSquare className="w-5 h-5" />
-              </ToolbarButton>
-
-              <ToolbarDivider />
-
-              <ToolbarButton
-                onClick={() => editor.chain().focus().toggleBlockquote().run()}
-                isActive={editor.isActive('blockquote')}
-                title="Quote"
-              >
-                <Quote className="w-5 h-5" />
-              </ToolbarButton>
-              <ToolbarButton
-                onClick={() => editor.chain().focus().setHorizontalRule().run()}
-                title="Divider"
-              >
-                <Minus className="w-5 h-5" />
-              </ToolbarButton>
-
-              <ToolbarDivider />
-
-              {isLinkInputOpen ? (
-                <div className="flex items-center gap-2">
-                  <input
-                    type="url"
-                    placeholder="https://..."
-                    value={linkUrl}
-                    onChange={(e) => setLinkUrl(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') setLink();
-                      if (e.key === 'Escape') setIsLinkInputOpen(false);
-                    }}
-                    className="w-40 px-3 py-1.5 text-sm bg-[var(--color-background)] border border-[var(--color-border)] rounded-lg text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
-                    autoFocus
-                  />
-                  <button
-                    onClick={setLink}
-                    className="px-3 py-1.5 text-sm bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white rounded-lg"
-                  >
-                    Add
-                  </button>
-                  <button
-                    onClick={() => setIsLinkInputOpen(false)}
-                    className="px-2 py-1.5 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ) : (
+            <div className="w-full overflow-x-auto">
+              <div className="flex items-center gap-1 px-4 sm:px-6 py-2.5 min-w-max">
                 <ToolbarButton
-                  onClick={() => {
-                    const previousUrl = editor.getAttributes('link').href;
-                    setLinkUrl(previousUrl || '');
-                    setIsLinkInputOpen(true);
-                  }}
-                  isActive={editor.isActive('link')}
-                  title="Link"
+                  onClick={() => editor.chain().focus().undo().run()}
+                  disabled={!editor.can().undo()}
+                  title="Undo"
                 >
-                  <LinkIcon className="w-5 h-5" />
+                  <Undo className="w-5 h-5" />
                 </ToolbarButton>
-              )}
+                <ToolbarButton
+                  onClick={() => editor.chain().focus().redo().run()}
+                  disabled={!editor.can().redo()}
+                  title="Redo"
+                >
+                  <Redo className="w-5 h-5" />
+                </ToolbarButton>
+
+                <ToolbarDivider />
+
+                <ToolbarButton
+                  onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+                  isActive={editor.isActive('heading', { level: 1 })}
+                  title="Heading 1"
+                >
+                  <Heading1 className="w-5 h-5" />
+                </ToolbarButton>
+                <ToolbarButton
+                  onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+                  isActive={editor.isActive('heading', { level: 2 })}
+                  title="Heading 2"
+                >
+                  <Heading2 className="w-5 h-5" />
+                </ToolbarButton>
+                <ToolbarButton
+                  onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+                  isActive={editor.isActive('heading', { level: 3 })}
+                  title="Heading 3"
+                >
+                  <Heading3 className="w-5 h-5" />
+                </ToolbarButton>
+
+                <ToolbarDivider />
+
+                <ToolbarButton
+                  onClick={() => editor.chain().focus().toggleBold().run()}
+                  isActive={editor.isActive('bold')}
+                  title="Bold"
+                >
+                  <Bold className="w-5 h-5" />
+                </ToolbarButton>
+                <ToolbarButton
+                  onClick={() => editor.chain().focus().toggleItalic().run()}
+                  isActive={editor.isActive('italic')}
+                  title="Italic"
+                >
+                  <Italic className="w-5 h-5" />
+                </ToolbarButton>
+                <ToolbarButton
+                  onClick={() => editor.chain().focus().toggleStrike().run()}
+                  isActive={editor.isActive('strike')}
+                  title="Strikethrough"
+                >
+                  <Strikethrough className="w-5 h-5" />
+                </ToolbarButton>
+                <ToolbarButton
+                  onClick={() => editor.chain().focus().toggleCode().run()}
+                  isActive={editor.isActive('code')}
+                  title="Code"
+                >
+                  <Code className="w-5 h-5" />
+                </ToolbarButton>
+
+                <ToolbarDivider />
+
+                <ToolbarButton
+                  onClick={() => editor.chain().focus().toggleBulletList().run()}
+                  isActive={editor.isActive('bulletList')}
+                  title="Bullet List"
+                >
+                  <List className="w-5 h-5" />
+                </ToolbarButton>
+                <ToolbarButton
+                  onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                  isActive={editor.isActive('orderedList')}
+                  title="Numbered List"
+                >
+                  <ListOrdered className="w-5 h-5" />
+                </ToolbarButton>
+                <ToolbarButton
+                  onClick={() => editor.chain().focus().toggleTaskList().run()}
+                  isActive={editor.isActive('taskList')}
+                  title="Task List"
+                >
+                  <CheckSquare className="w-5 h-5" />
+                </ToolbarButton>
+
+                <ToolbarDivider />
+
+                <ToolbarButton
+                  onClick={() => editor.chain().focus().toggleBlockquote().run()}
+                  isActive={editor.isActive('blockquote')}
+                  title="Quote"
+                >
+                  <Quote className="w-5 h-5" />
+                </ToolbarButton>
+                <ToolbarButton
+                  onClick={() => editor.chain().focus().setHorizontalRule().run()}
+                  title="Divider"
+                >
+                  <Minus className="w-5 h-5" />
+                </ToolbarButton>
+
+                <ToolbarDivider />
+
+                {isLinkInputOpen ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="url"
+                      placeholder="https://..."
+                      value={linkUrl}
+                      onChange={(e) => setLinkUrl(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') setLink();
+                        if (e.key === 'Escape') setIsLinkInputOpen(false);
+                      }}
+                      className="w-40 px-3 py-1.5 text-sm bg-[var(--color-background)] border border-[var(--color-border)] rounded-lg text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
+                      autoFocus
+                    />
+                    <button
+                      onClick={setLink}
+                      className="px-3 py-1.5 text-sm bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white rounded-lg"
+                    >
+                      Add
+                    </button>
+                    <button
+                      onClick={() => setIsLinkInputOpen(false)}
+                      className="px-2 py-1.5 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ) : (
+                  <ToolbarButton
+                    onClick={() => {
+                      const previousUrl = editor.getAttributes('link').href;
+                      setLinkUrl(previousUrl || '');
+                      setIsLinkInputOpen(true);
+                    }}
+                    isActive={editor.isActive('link')}
+                    title="Link"
+                  >
+                    <LinkIcon className="w-5 h-5" />
+                  </ToolbarButton>
+                )}
+              </div>
             </div>
           </div>
         )}
