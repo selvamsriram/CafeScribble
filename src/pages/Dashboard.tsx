@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { GitHubService, type ScribbleDocument } from '@/services/github';
 import { Button } from '@/components/ui/button';
@@ -23,14 +23,17 @@ import {
   LogOut,
   Loader2,
   FolderOpen,
+  RefreshCw,
 } from 'lucide-react';
 
 export function DashboardPage() {
   const { user, logout, selectedRepo, setSelectedRepo } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [documents, setDocuments] = useState<ScribbleDocument[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -40,36 +43,79 @@ export function DashboardPage() {
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  
+  // Track if we've loaded at least once
+  const hasLoaded = useRef(false);
+  // Track last load time to avoid rapid reloads
+  const lastLoadTime = useRef(0);
 
   const { owner, repo } = selectedRepo
     ? GitHubService.parseRepoFullName(selectedRepo)
     : { owner: '', repo: '' };
 
   // Loads all scribbles from the selected repo (root `*.md`, excluding `README.md`).
-  const loadDocuments = useCallback(async () => {
+  const loadDocuments = useCallback(async (showRefreshing = false) => {
     if (!selectedRepo) return;
 
+    // Prevent rapid reloads (within 500ms)
+    const now = Date.now();
+    if (hasLoaded.current && now - lastLoadTime.current < 500) {
+      return;
+    }
+
     try {
-      setLoading(true);
+      if (showRefreshing && hasLoaded.current) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
       setError(null);
+      
       const docs = await GitHubService.getScribbleDocuments(owner, repo);
       setDocuments(docs);
+      hasLoaded.current = true;
+      lastLoadTime.current = Date.now();
     } catch (err) {
       setError('Failed to load documents');
       console.error(err);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, [selectedRepo, owner, repo]);
 
+  // Initial load and reload when coming back to this page
   useEffect(() => {
     if (!selectedRepo) {
       navigate('/repos');
       return;
     }
-    loadDocuments();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedRepo, loadDocuments]);
+    
+    // Always reload when the component mounts or location changes
+    // This ensures fresh data when navigating back from editor
+    loadDocuments(hasLoaded.current);
+  }, [selectedRepo, navigate, loadDocuments, location.key]);
+
+  // Reload when page becomes visible (e.g., switching tabs back)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && hasLoaded.current) {
+        loadDocuments(true);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [loadDocuments]);
+
+  // Close menus when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => setActiveMenu(null);
+    if (activeMenu) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [activeMenu]);
 
   const createDocument = () => {
     if (!newDocName.trim() || !selectedRepo) return;
@@ -98,13 +144,28 @@ export function DashboardPage() {
 
     try {
       setProcessing(true);
-      await GitHubService.deleteFile(owner, repo, selectedDoc.path, selectedDoc.sha);
-      setDocuments(documents.filter((d) => d.path !== selectedDoc.path));
+      setError(null);
+      
+      // Get fresh SHA before deleting to avoid stale SHA issues
+      const freshMeta = await GitHubService.getFileMeta(owner, repo, selectedDoc.path);
+      const currentSha = freshMeta?.sha || selectedDoc.sha;
+      
+      await GitHubService.deleteFile(owner, repo, selectedDoc.path, currentSha);
+      
+      // Optimistically remove from UI
+      setDocuments(prev => prev.filter((d) => d.path !== selectedDoc.path));
       setShowDeleteDialog(false);
       setSelectedDoc(null);
+      
+      // Reload to ensure consistency after a short delay
+      setTimeout(() => loadDocuments(true), 1000);
     } catch (err) {
-      setError('Failed to delete document');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete document';
+      setError(errorMessage);
       console.error(err);
+      
+      // Reload documents to get fresh state
+      loadDocuments(true);
     } finally {
       setProcessing(false);
     }
@@ -115,14 +176,25 @@ export function DashboardPage() {
 
     try {
       setProcessing(true);
+      setError(null);
+      
       const renamedDoc = await GitHubService.renameScribble(owner, repo, selectedDoc, newDocName.trim());
-      setDocuments(documents.map((d) => (d.path === selectedDoc.path ? renamedDoc : d)));
+      
+      // Update local state
+      setDocuments(prev => prev.map((d) => (d.path === selectedDoc.path ? renamedDoc : d)));
       setShowRenameDialog(false);
       setSelectedDoc(null);
       setNewDocName('');
+      
+      // Reload to ensure consistency
+      setTimeout(() => loadDocuments(true), 1000);
     } catch (err) {
-      setError('Failed to rename document');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to rename document';
+      setError(errorMessage);
       console.error(err);
+      
+      // Reload documents to get fresh state
+      loadDocuments(true);
     } finally {
       setProcessing(false);
     }
@@ -135,6 +207,10 @@ export function DashboardPage() {
   const changeRepo = () => {
     setSelectedRepo('');
     navigate('/repos');
+  };
+
+  const handleManualRefresh = () => {
+    loadDocuments(true);
   };
 
   const filteredDocs = documents.filter((doc) =>
@@ -208,15 +284,27 @@ export function DashboardPage() {
             </p>
           </div>
           
-          <Button
-            onClick={() => {
-              setNewDocName('');
-              setShowCreateDialog(true);
-            }}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            New Scribble
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleManualRefresh}
+              disabled={refreshing}
+              title="Refresh documents"
+              className="shrink-0"
+            >
+              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+            </Button>
+            <Button
+              onClick={() => {
+                setNewDocName('');
+                setShowCreateDialog(true);
+              }}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              New Scribble
+            </Button>
+          </div>
         </div>
 
         <div className="mb-8">
@@ -236,8 +324,14 @@ export function DashboardPage() {
         </div>
 
         {error && (
-          <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 mb-6">
-            {error}
+          <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 mb-6 flex items-center justify-between">
+            <span>{error}</span>
+            <button 
+              onClick={() => setError(null)} 
+              className="text-red-600 hover:text-red-800 ml-4"
+            >
+              ✕
+            </button>
           </div>
         )}
 

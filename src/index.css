@@ -407,3 +407,187 @@
   animation: steam 2.5s ease-in-out infinite;
   animation-delay: -1.6s;
 }
+
+/* ============================================
+   PROSEMIRROR / TIPTAP TABLE STYLES
+   Consolidated table styling for the editor
+   ============================================ */
+
+.ProseMirror table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+  table-layout: fixed;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-border);
+}
+
+.ProseMirror td,
+.ProseMirror th {
+  border: 1px solid var(--color-border);
+  padding: 0.5rem 0.75rem;
+  position: relative;
+  vertical-align: top;
+  min-width: 80px;
+  box-sizing: border-box;
+}
+
+/* Remove paragraph margins inside table cells */
+.ProseMirror td > *,
+.ProseMirror th > *,
+.ProseMirror table p {
+  margin: 0 !important;
+  padding: 0;
+}
+
+/* Header row styling */
+.ProseMirror th {
+  background-color: var(--color-surface);
+  font-weight: 600;
+  text-align: left;
+  color: var(--color-text);
+}
+
+/* Alternating row colors */
+.ProseMirror tr:nth-child(even) td {
+  background-color: var(--color-surface);
+}
+
+.ProseMirror tr:nth-child(odd) td {
+  background-color: var(--color-background);
+}
+
+/* Hover effect for rows */
+.ProseMirror tr:hover td {
+  background-color: var(--color-surface-hover);
+}
+
+/* Selected cell styling */
+.ProseMirror .selectedCell {
+  background: color-mix(in srgb, var(--color-primary) 15%, transparent) !important;
+}
+
+.ProseMirror .selectedCell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--color-primary);
+  pointer-events: none;
+}
+
+/* Column resize handle */
+.ProseMirror .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: var(--color-primary);
+  cursor: col-resize;
+  z-index: 20;
+}
+
+/* Resize cursor when dragging */
+.ProseMirror.resize-cursor,
+.ProseMirror.resize-cursor td,
+.ProseMirror.resize-cursor th {
+  cursor: col-resize;
+}
+
+/* Table wrapper for horizontal scroll */
+.ProseMirror .tableWrapper {
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+/* Table cell focus state */
+.ProseMirror td:focus-within,
+.ProseMirror th:focus-within {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+/* Prose table overrides for consistency */
+.prose table {
+  margin: 1rem 0;
+}
+
+.prose th,
+.prose td {
+  padding: 0.5rem 0.75rem;
+}
+
+/* ============================================
+   INLINE CODE & CODE BLOCK STYLES
+   ============================================ */
+
+/* Inline code - subtle appearance with border */
+.ProseMirror code:not(pre code),
+.prose code:not(pre code) {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.25rem;
+  padding: 0.125rem 0.375rem;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, Consolas, monospace;
+  font-size: 0.9em;
+  font-weight: normal;
+  color: var(--color-text);
+}
+
+/* Remove any pseudo-element quotes from code */
+.ProseMirror code::before,
+.ProseMirror code::after,
+.prose code::before,
+.prose code::after {
+  content: none !important;
+}
+
+/* Code block - distinct block appearance */
+.ProseMirror pre {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  margin: 1rem 0;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, Consolas, monospace;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  box-shadow: 0 1px 2px var(--color-shadow);
+}
+
+/* Code inside code blocks should not have additional styling */
+.ProseMirror pre code {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  font-size: inherit;
+  color: inherit;
+  box-shadow: none;
+}
+
+/* ============================================
+   BLOCKQUOTE STYLES
+   ============================================ */
+
+/* Remove quotation marks from blockquotes */
+.ProseMirror blockquote::before,
+.ProseMirror blockquote::after,
+.prose blockquote::before,
+.prose blockquote::after {
+  content: none !important;
+}
+
+.ProseMirror blockquote {
+  border-left: 4px solid var(--color-primary);
+  background-color: color-mix(in srgb, var(--color-primary) 5%, transparent);
+  padding: 0.5rem 1.25rem;
+  margin: 1rem 0;
+  border-radius: 0 0.5rem 0.5rem 0;
+  font-style: normal;
+}
+
+.ProseMirror blockquote p {
+  color: var(--color-text-muted);
+}

@@ -36,6 +36,12 @@ import {
   Undo,
   Redo,
   Github,
+  Table as TableIcon,
+  FileCode,
+  Plus,
+  Trash2,
+  Rows3,
+  Columns3,
 } from 'lucide-react';
 
 // Navigation state passed from Dashboard when creating new document
@@ -533,6 +539,79 @@ export function EditorPage() {
                     <LinkIcon className="w-5 h-5" />
                   </ToolbarButton>
                 )}
+
+                <ToolbarDivider />
+
+                <ToolbarButton
+                  onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+                  isActive={editor.isActive('codeBlock')}
+                  title="Code Block"
+                >
+                  <FileCode className="w-5 h-5" />
+                </ToolbarButton>
+                <ToolbarButton
+                  onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+                  isActive={editor.isActive('table')}
+                  title="Insert Table"
+                >
+                  <TableIcon className="w-5 h-5" />
+                </ToolbarButton>
+
+                {/* Table controls - show when in table */}
+                {editor.isActive('table') && (
+                  <>
+                    <ToolbarDivider />
+                    <ToolbarButton
+                      onClick={() => editor.chain().focus().addRowAfter().run()}
+                      title="Add Row Below"
+                      aria-label="Add row below current row"
+                    >
+                      <div className="flex items-center gap-0.5">
+                        <Plus className="w-3 h-3" />
+                        <Rows3 className="w-4 h-4" />
+                      </div>
+                    </ToolbarButton>
+                    <ToolbarButton
+                      onClick={() => editor.chain().focus().addColumnAfter().run()}
+                      title="Add Column Right"
+                      aria-label="Add column to the right"
+                    >
+                      <div className="flex items-center gap-0.5">
+                        <Plus className="w-3 h-3" />
+                        <Columns3 className="w-4 h-4" />
+                      </div>
+                    </ToolbarButton>
+                    <ToolbarButton
+                      onClick={() => editor.chain().focus().deleteRow().run()}
+                      title="Delete Row"
+                      aria-label="Delete current row"
+                    >
+                      <div className="flex items-center gap-0.5 text-red-500">
+                        <Minus className="w-3 h-3" />
+                        <Rows3 className="w-4 h-4" />
+                      </div>
+                    </ToolbarButton>
+                    <ToolbarButton
+                      onClick={() => editor.chain().focus().deleteColumn().run()}
+                      title="Delete Column"
+                      aria-label="Delete current column"
+                    >
+                      <div className="flex items-center gap-0.5 text-red-500">
+                        <Minus className="w-3 h-3" />
+                        <Columns3 className="w-4 h-4" />
+                      </div>
+                    </ToolbarButton>
+                    <ToolbarButton
+                      onClick={() => editor.chain().focus().deleteTable().run()}
+                      title="Delete Entire Table"
+                      aria-label="Delete the entire table"
+                    >
+                      <div className="text-red-500">
+                        <Trash2 className="w-5 h-5" />
+                      </div>
+                    </ToolbarButton>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -608,18 +687,21 @@ function ToolbarButton({
   disabled,
   title,
   children,
+  'aria-label': ariaLabel,
 }: {
   onClick: () => void;
   isActive?: boolean;
   disabled?: boolean;
   title: string;
   children: React.ReactNode;
+  'aria-label'?: string;
 }) {
   return (
     <button
       onClick={onClick}
       disabled={disabled}
       title={title}
+      aria-label={ariaLabel || title}
       className={cn(
         'p-2.5 rounded-lg transition-all duration-150',
         isActive

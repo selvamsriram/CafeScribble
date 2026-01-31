@@ -4,12 +4,13 @@ import { AuthService } from './auth';
 const GITHUB_API = 'https://api.github.com';
 
 // Retry configuration for eventual consistency
-const CONSISTENCY_CHECK_INTERVAL = 1500; // ms between checks
-const CONSISTENCY_MAX_ATTEMPTS = 10; // max retries (10 seconds total)
+const CONSISTENCY_CHECK_INTERVAL = 1000; // ms between checks
+const CONSISTENCY_MAX_ATTEMPTS = 8; // max retries
 
 interface GitHubApiOptions {
   method?: string;
   body?: unknown;
+  noCache?: boolean; // Force fresh data from GitHub
 }
 
 // Helper to wait for a specified time
@@ -41,13 +42,21 @@ async function githubFetch<T>(endpoint: string, options: GitHubApiOptions = {}):
     throw new Error('Not authenticated');
   }
 
+  const headers: Record<string, string> = {
+    'Authorization': `Bearer ${token}`,
+    'Accept': 'application/vnd.github.v3+json',
+    'Content-Type': 'application/json',
+  };
+
+  // Add cache-busting headers when noCache is true
+  if (options.noCache) {
+    headers['Cache-Control'] = 'no-cache';
+    headers['If-None-Match'] = ''; // Bypass ETag caching
+  }
+
   const response = await fetch(`${GITHUB_API}${endpoint}`, {
     method: options.method || 'GET',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Accept': 'application/vnd.github.v3+json',
-      'Content-Type': 'application/json',
-    },
+    headers,
     body: options.body ? JSON.stringify(options.body) : undefined,
   });
 
@@ -118,10 +127,13 @@ export const GitHubService = {
     return repo;
   },
 
-  // Get repository contents (list files)
+  // Get repository contents (list files) - always fetch fresh
   async getContents(owner: string, repo: string, path: string = ''): Promise<FileContent[]> {
     try {
-      const contents = await githubFetch<FileContent | FileContent[]>(`/repos/${owner}/${repo}/contents/${path}`);
+      const contents = await githubFetch<FileContent | FileContent[]>(
+        `/repos/${owner}/${repo}/contents/${path}`,
+        { noCache: true }
+      );
       return Array.isArray(contents) ? contents : [contents];
     } catch (error) {
       // Return empty array if path doesn't exist
@@ -132,10 +144,26 @@ export const GitHubService = {
     }
   },
 
+  // Get fresh file metadata (sha) for a specific file
+  async getFileMeta(owner: string, repo: string, path: string): Promise<FileContent | null> {
+    try {
+      const file = await githubFetch<FileContent>(
+        `/repos/${owner}/${repo}/contents/${path}`,
+        { noCache: true }
+      );
+      return file;
+    } catch {
+      return null;
+    }
+  },
+
   // Check if a file exists in the repository
   async fileExists(owner: string, repo: string, path: string): Promise<boolean> {
     try {
-      await githubFetch<FileContent>(`/repos/${owner}/${repo}/contents/${path}`);
+      await githubFetch<FileContent>(
+        `/repos/${owner}/${repo}/contents/${path}`,
+        { noCache: true }
+      );
       return true;
     } catch {
       return false;
@@ -155,7 +183,7 @@ export const GitHubService = {
     });
   },
 
-  // Get all markdown files in the repository root
+  // Get all markdown files in the repository root - always fetch fresh data
   async getScribbleDocuments(owner: string, repo: string): Promise<ScribbleDocument[]> {
     const contents = await this.getContents(owner, repo);
     const markdownFiles = contents.filter(
@@ -178,9 +206,12 @@ export const GitHubService = {
     return documents;
   },
 
-  // Get file content
-  async getFileContent(owner: string, repo: string, path: string): Promise<string> {
-    const file = await githubFetch<FileContent>(`/repos/${owner}/${repo}/contents/${path}`);
+  // Get file content - with cache bypass option
+  async getFileContent(owner: string, repo: string, path: string, noCache: boolean = false): Promise<string> {
+    const file = await githubFetch<FileContent>(
+      `/repos/${owner}/${repo}/contents/${path}`,
+      { noCache }
+    );
     
     if (file.content && file.encoding === 'base64') {
       // Properly decode base64 + UTF-8 content
@@ -203,7 +234,7 @@ export const GitHubService = {
     return '';
   },
 
-  // Create or update a file
+  // Create or update a file - returns updated file info
   async saveFile(
     owner: string,
     repo: string,
@@ -211,7 +242,7 @@ export const GitHubService = {
     content: string,
     message: string,
     sha?: string
-  ): Promise<{ sha: string }> {
+  ): Promise<{ sha: string; content: FileContent }> {
     // Properly encode UTF-8 content to base64
     const encoder = new TextEncoder();
     const bytes = encoder.encode(content);
@@ -239,7 +270,7 @@ export const GitHubService = {
       body,
     });
 
-    return { sha: response.content.sha };
+    return { sha: response.content.sha, content: response.content };
   },
 
   // Delete a file and wait for consistency
@@ -295,20 +326,24 @@ export const GitHubService = {
     };
   },
 
-  // Update an existing scribble document
+  // Update an existing scribble document - fetches fresh SHA first to avoid conflicts
   async updateScribble(
     owner: string,
     repo: string,
     document: ScribbleDocument,
     newContent: string
   ): Promise<ScribbleDocument> {
+    // Always get fresh SHA to avoid "SHA mismatch" errors
+    const freshMeta = await this.getFileMeta(owner, repo, document.path);
+    const currentSha = freshMeta?.sha || document.sha;
+
     const result = await this.saveFile(
       owner,
       repo,
       document.path,
       newContent,
       `Update scribble: ${document.name}`,
-      document.sha // Pass the SHA to update existing file
+      currentSha
     );
 
     return {
@@ -328,6 +363,10 @@ export const GitHubService = {
     const newPath = `${newName.replace(/[^a-zA-Z0-9-_]/g, '-')}.md`;
     const oldPath = document.path;
     
+    // Get fresh SHA for the old file
+    const freshMeta = await this.getFileMeta(owner, repo, oldPath);
+    const currentSha = freshMeta?.sha || document.sha;
+    
     // Create new file with new name
     const result = await this.saveFile(
       owner,
@@ -341,7 +380,7 @@ export const GitHubService = {
     await this.waitForFileConsistency(owner, repo, newPath, true);
 
     // Delete old file (this also waits for consistency)
-    await this.deleteFile(owner, repo, oldPath, document.sha);
+    await this.deleteFile(owner, repo, oldPath, currentSha);
 
     // Final verification: ensure both conditions are met
     const isFullyConsistent = await waitForCondition(async () => {
@@ -370,4 +409,3 @@ export const GitHubService = {
     return { owner, repo };
   },
 };
-
