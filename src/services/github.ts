@@ -10,7 +10,6 @@ const CONSISTENCY_MAX_ATTEMPTS = 8; // max retries
 interface GitHubApiOptions {
   method?: string;
   body?: unknown;
-  noCache?: boolean; // Force fresh data from GitHub
 }
 
 // Helper to wait for a specified time
@@ -47,12 +46,6 @@ async function githubFetch<T>(endpoint: string, options: GitHubApiOptions = {}):
     'Accept': 'application/vnd.github.v3+json',
     'Content-Type': 'application/json',
   };
-
-  // Add cache-busting headers when noCache is true
-  if (options.noCache) {
-    headers['Cache-Control'] = 'no-cache';
-    headers['If-None-Match'] = ''; // Bypass ETag caching
-  }
 
   const response = await fetch(`${GITHUB_API}${endpoint}`, {
     method: options.method || 'GET',
@@ -127,12 +120,11 @@ export const GitHubService = {
     return repo;
   },
 
-  // Get repository contents (list files) - always fetch fresh
+  // Get repository contents (list files)
   async getContents(owner: string, repo: string, path: string = ''): Promise<FileContent[]> {
     try {
       const contents = await githubFetch<FileContent | FileContent[]>(
-        `/repos/${owner}/${repo}/contents/${path}`,
-        { noCache: true }
+        `/repos/${owner}/${repo}/contents/${path}`
       );
       return Array.isArray(contents) ? contents : [contents];
     } catch (error) {
@@ -148,8 +140,7 @@ export const GitHubService = {
   async getFileMeta(owner: string, repo: string, path: string): Promise<FileContent | null> {
     try {
       const file = await githubFetch<FileContent>(
-        `/repos/${owner}/${repo}/contents/${path}`,
-        { noCache: true }
+        `/repos/${owner}/${repo}/contents/${path}`
       );
       return file;
     } catch {
@@ -161,8 +152,7 @@ export const GitHubService = {
   async fileExists(owner: string, repo: string, path: string): Promise<boolean> {
     try {
       await githubFetch<FileContent>(
-        `/repos/${owner}/${repo}/contents/${path}`,
-        { noCache: true }
+        `/repos/${owner}/${repo}/contents/${path}`
       );
       return true;
     } catch {
@@ -183,7 +173,7 @@ export const GitHubService = {
     });
   },
 
-  // Get all markdown files in the repository root - always fetch fresh data
+  // Get all markdown files in the repository root
   async getScribbleDocuments(owner: string, repo: string): Promise<ScribbleDocument[]> {
     const contents = await this.getContents(owner, repo);
     const markdownFiles = contents.filter(
@@ -206,11 +196,10 @@ export const GitHubService = {
     return documents;
   },
 
-  // Get file content - with cache bypass option
-  async getFileContent(owner: string, repo: string, path: string, noCache: boolean = false): Promise<string> {
+  // Get file content
+  async getFileContent(owner: string, repo: string, path: string): Promise<string> {
     const file = await githubFetch<FileContent>(
-      `/repos/${owner}/${repo}/contents/${path}`,
-      { noCache }
+      `/repos/${owner}/${repo}/contents/${path}`
     );
     
     if (file.content && file.encoding === 'base64') {
