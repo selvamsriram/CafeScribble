@@ -249,7 +249,7 @@ function htmlTableToMarkdown(tableHtml: string): string {
   // Extract rows
   const rowMatches = tableHtml.match(/<tr[^>]*>[\s\S]*?<\/tr>/gi) || [];
   
-  rowMatches.forEach((rowHtml, rowIndex) => {
+  rowMatches.forEach((rowHtml) => {
     const cells: string[] = [];
     
     // Check for header cells
