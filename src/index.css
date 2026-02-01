@@ -5,6 +5,123 @@
 @plugin "@tailwindcss/typography";
 
 /* ============================================
+   THEME: CUPERTINO
+   Apple-like clarity, iOS blue, glassy surfaces
+   ============================================ */
+[data-palette="cupertino"] {
+  --font-heading: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  --font-body: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+}
+
+[data-palette="cupertino"][data-mode="day"] {
+  --color-background: #F5F5F7;
+  --color-surface: rgba(255 255 255 / 0.72);
+  --color-surface-hover: rgba(255 255 255 / 0.88);
+  --color-primary: #007AFF;
+  --color-primary-hover: #0066D6;
+  --color-accent: #34C759;
+  --color-accent-hover: #28A745;
+  --color-text: #1D1D1F;
+  --color-text-muted: #6E6E73;
+  --color-border: rgba(0 0 0 / 0.12);
+  --color-shadow: rgba(0 0 0 / 0.08);
+  --color-shadow-lg: rgba(0 0 0 / 0.14);
+}
+
+[data-palette="cupertino"][data-mode="night"] {
+  --color-background: #0B0B0D;
+  --color-surface: rgba(28 28 30 / 0.74);
+  --color-surface-hover: rgba(44 44 46 / 0.78);
+  --color-primary: #0A84FF;
+  --color-primary-hover: #409CFF;
+  --color-accent: #30D158;
+  --color-accent-hover: #5AE37A;
+  --color-text: #F5F5F7;
+  --color-text-muted: #A1A1A6;
+  --color-border: rgba(255 255 255 / 0.10);
+  --color-shadow: rgba(0 0 0 / 0.35);
+  --color-shadow-lg: rgba(0 0 0 / 0.55);
+}
+
+/* ============================================
+   THEME: GRAPHITE
+   Neutral, timeless grayscale with hairlines
+   ============================================ */
+[data-palette="graphite"] {
+  --font-heading: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  --font-body: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+}
+
+[data-palette="graphite"][data-mode="day"] {
+  --color-background: #F2F2F7;
+  --color-surface: rgba(255 255 255 / 0.70);
+  --color-surface-hover: rgba(255 255 255 / 0.86);
+  --color-primary: #3A3A3C;
+  --color-primary-hover: #2C2C2E;
+  --color-accent: #8E8E93;
+  --color-accent-hover: #7C7C80;
+  --color-text: #1C1C1E;
+  --color-text-muted: #6E6E73;
+  --color-border: rgba(0 0 0 / 0.10);
+  --color-shadow: rgba(0 0 0 / 0.06);
+  --color-shadow-lg: rgba(0 0 0 / 0.12);
+}
+
+[data-palette="graphite"][data-mode="night"] {
+  --color-background: #0E0E10;
+  --color-surface: rgba(28 28 30 / 0.72);
+  --color-surface-hover: rgba(44 44 46 / 0.78);
+  --color-primary: #D1D1D6;
+  --color-primary-hover: #E5E5EA;
+  --color-accent: #8E8E93;
+  --color-accent-hover: #AEAEB2;
+  --color-text: #F2F2F7;
+  --color-text-muted: #A1A1A6;
+  --color-border: rgba(255 255 255 / 0.10);
+  --color-shadow: rgba(0 0 0 / 0.35);
+  --color-shadow-lg: rgba(0 0 0 / 0.55);
+}
+
+/* ============================================
+   THEME: FROST
+   Cool glass surfaces with subtle blue-gray depth
+   ============================================ */
+[data-palette="frost"] {
+  --font-heading: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  --font-body: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+}
+
+[data-palette="frost"][data-mode="day"] {
+  --color-background: #F6F8FF;
+  --color-surface: rgba(255 255 255 / 0.68);
+  --color-surface-hover: rgba(255 255 255 / 0.86);
+  --color-primary: #0A84FF;
+  --color-primary-hover: #0066D6;
+  --color-accent: #5AC8FA;
+  --color-accent-hover: #32ADE6;
+  --color-text: #1D1D1F;
+  --color-text-muted: #6E6E73;
+  --color-border: rgba(0 0 0 / 0.10);
+  --color-shadow: rgba(0 32 64 / 0.08);
+  --color-shadow-lg: rgba(0 32 64 / 0.14);
+}
+
+[data-palette="frost"][data-mode="night"] {
+  --color-background: #0B1020;
+  --color-surface: rgba(28 36 60 / 0.62);
+  --color-surface-hover: rgba(36 48 80 / 0.70);
+  --color-primary: #64D2FF;
+  --color-primary-hover: #7BD9FF;
+  --color-accent: #0A84FF;
+  --color-accent-hover: #409CFF;
+  --color-text: #F5F7FF;
+  --color-text-muted: rgba(245 247 255 / 0.70);
+  --color-border: rgba(255 255 255 / 0.12);
+  --color-shadow: rgba(0 0 0 / 0.40);
+  --color-shadow-lg: rgba(0 0 0 / 0.60);
+}
+
+/* ============================================
    THEME: SAGE GARDEN (Original)
    Warm cream with sage green accents
    ============================================ */
@@ -293,6 +410,13 @@
 
 [data-mode="night"] .paper-texture::before {
   opacity: 0.03;
+}
+
+/* Apple-like palettes should feel clean (no paper grain). */
+[data-palette="cupertino"] .paper-texture::before,
+[data-palette="graphite"] .paper-texture::before,
+[data-palette="frost"] .paper-texture::before {
+  opacity: 0 !important;
 }
 
 /* Custom scrollbar */

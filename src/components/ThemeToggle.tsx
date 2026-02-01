@@ -125,6 +125,9 @@ export function ThemeToggle({ className, showPaletteSelector = true }: ThemeTogg
 
 function ThemePreviewDot({ palette }: { palette: ThemePalette }) {
   const colors: Record<ThemePalette, { bg: string; primary: string; accent: string }> = {
+    cupertino: { bg: '#F5F5F7', primary: '#007AFF', accent: '#34C759' },
+    graphite: { bg: '#F2F2F7', primary: '#3A3A3C', accent: '#8E8E93' },
+    frost: { bg: '#F6F8FF', primary: '#0A84FF', accent: '#5AC8FA' },
     sage: { bg: '#FDF8F3', primary: '#2c5c35', accent: '#D4A5A5' },
     kissaten: { bg: '#F7F3EE', primary: '#8B5A3C', accent: '#6B7B6B' },
     hygge: { bg: '#FAFAF8', primary: '#78716C', accent: '#B45309' },

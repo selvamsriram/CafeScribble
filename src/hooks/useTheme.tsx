@@ -1,7 +1,16 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 
 export type ThemeMode = 'day' | 'night';
-export type ThemePalette = 'sage' | 'kissaten' | 'hygge' | 'parisian' | 'kyoto' | 'cafe';
+export type ThemePalette =
+  | 'cupertino'
+  | 'graphite'
+  | 'frost'
+  | 'sage'
+  | 'kissaten'
+  | 'hygge'
+  | 'parisian'
+  | 'kyoto'
+  | 'cafe';
 
 interface ThemeContextType {
   mode: ThemeMode;
@@ -17,6 +26,33 @@ const STORAGE_KEY_MODE = 'scribble-theme-mode';
 const STORAGE_KEY_PALETTE = 'scribble-theme-palette';
 
 export const THEME_INFO: Record<ThemePalette, { name: string; description: string; fonts: { heading: string; body: string } }> = {
+  cupertino: {
+    name: 'Cupertino',
+    description: 'Apple-like clarity with system typography & iOS blue',
+    fonts: {
+      heading:
+        'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif',
+      body: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif',
+    },
+  },
+  graphite: {
+    name: 'Graphite',
+    description: 'Neutral graphite surfaces, hairline borders, restrained contrast',
+    fonts: {
+      heading:
+        'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif',
+      body: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif',
+    },
+  },
+  frost: {
+    name: 'Frost',
+    description: 'Cool glassy surfaces with subtle blue-gray depth',
+    fonts: {
+      heading:
+        'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif',
+      body: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif',
+    },
+  },
   sage: {
     name: 'Sage Garden',
     description: 'Warm cream with sage green accents',
@@ -59,7 +95,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [palette, setPaletteState] = useState<ThemePalette>(() => {
     const stored = localStorage.getItem(STORAGE_KEY_PALETTE);
     if (stored && stored in THEME_INFO) return stored as ThemePalette;
-    return 'sage';
+    // Default to an Apple-like palette for new users.
+    return 'cupertino';
   });
 
   useEffect(() => {
