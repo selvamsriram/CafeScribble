@@ -88,6 +88,9 @@ export function EditorPage() {
   
   // Use a ref to prevent overlapping commits (e.g. double click / repeated Cmd+S).
   const isCommitInProgress = useRef(false);
+  
+  // Track the saved content to compare against for change detection
+  const savedContentRef = useRef<string>('');
 
   // Load document content and associated SHA (needed for GitHub updates/deletes).
   const loadDocument = useCallback(async () => {
@@ -108,6 +111,7 @@ export function EditorPage() {
 
         setDocument(doc);
         setContent(newDocState.content);
+        savedContentRef.current = ''; // New doc has no saved content yet
         setIsNewDocument(true);
         setGithubStatus('uncommitted');
         setLoading(false);
@@ -135,6 +139,7 @@ export function EditorPage() {
 
       setDocument(doc);
       setContent(fileContent);
+      savedContentRef.current = fileContent; // Track the saved content
       setIsNewDocument(false);
       setGithubStatus('committed');
     } catch (err) {
@@ -155,12 +160,13 @@ export function EditorPage() {
     loadDocument();
   }, [selectedRepo, decodedPath, navigate, loadDocument]);
 
-  // Handle content changes - just update local state, mark as uncommitted
+  // Handle content changes - update local state, mark as uncommitted only if actually changed
   const handleContentChange = useCallback((newContent: string) => {
     setContent(newContent);
-    // Mark as uncommitted since there are unsaved changes
-    setGithubStatus((prev) => prev === 'uncommitted' ? prev : 'uncommitted');
-  }, []);
+    // Only mark as uncommitted if content differs from saved version
+    const hasRealChanges = isNewDocument || newContent !== savedContentRef.current;
+    setGithubStatus(hasRealChanges ? 'uncommitted' : 'committed');
+  }, [isNewDocument]);
 
   // Commit to GitHub (Cmd/Ctrl+S or commit button).
   const commitToGitHub = useCallback(async (): Promise<boolean> => {
@@ -200,6 +206,8 @@ export function EditorPage() {
         setDocument(updatedDoc);
       }
 
+      // Update saved content reference after successful commit
+      savedContentRef.current = content;
       setGithubStatus('committed');
       isCommitInProgress.current = false;
       return true;

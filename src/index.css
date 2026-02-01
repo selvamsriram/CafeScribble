@@ -599,17 +599,25 @@
 
 /* Task list container */
 .ProseMirror ul[data-type="taskList"] {
-  list-style: none;
-  padding-left: 0;
+  list-style: none !important;
+  padding-left: 0 !important;
   margin: 0.5rem 0;
 }
 
-/* Task list item */
+/* Task list item - remove all list styling */
 .ProseMirror ul[data-type="taskList"] li {
   display: flex;
   align-items: flex-start;
   gap: 0.5rem;
   margin: 0.25rem 0;
+  list-style: none !important;
+}
+
+/* Remove list markers from task items */
+.ProseMirror ul[data-type="taskList"] li::marker,
+.ProseMirror ul[data-type="taskList"] li::before {
+  content: none !important;
+  display: none !important;
 }
 
 /* Task list item content */
